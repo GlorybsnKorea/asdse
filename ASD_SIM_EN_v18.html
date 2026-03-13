@@ -675,8 +675,8 @@ function uP(){
   var ptR=getPortThrust(ship.pt,ship.st)*D, sbR=getStbdThrust(ship.sb,ship.st)*D;
   var sfx=Math.sin(ptR)*ptE+Math.sin(sbR)*sbE, sfy=-Math.cos(ptR)*ptE-Math.cos(sbR)*sbE;
   var cH=Math.cos(ship.hd), sH=Math.sin(ship.hd);
-  ship.vx+=(sfx*cH-sfy*sH)*0.012*dt; ship.vy+=(sfx*sH+sfy*cH)*0.012*dt;
-  ship.om+=((-4)*(-Math.cos(ptR)*ptE)-18*(Math.sin(ptR)*ptE)+4*(-Math.cos(sbR)*sbE)-18*(Math.sin(sbR)*sbE))*0.00005*dt;
+  ship.vx+=(sfx*cH-sfy*sH)*0.006*dt; ship.vy+=(sfx*sH+sfy*cH)*0.006*dt;
+  ship.om+=((-4)*(-Math.cos(ptR)*ptE)-18*(Math.sin(ptR)*ptE)+4*(-Math.cos(sbR)*sbE)-18*(Math.sin(sbR)*sbE))*0.000025*dt;
   ship.vx*=Math.pow(0.988,dt); ship.vy*=Math.pow(0.988,dt); ship.om*=Math.pow(0.975,dt);
   var fV=ship.vx*sH-ship.vy*cH, lV=ship.vx*cH+ship.vy*sH; lV*=Math.pow(0.93,dt);
   ship.vx=fV*sH+lV*cH; ship.vy=-fV*cH+lV*sH; 
@@ -744,9 +744,9 @@ function updateBridgeView(t){
   
   // Port wake — CONTINUOUS while playing with power
   if(playing && pPwr>0.005){
-    // Nozzle dir in ship-local frame (0=bow/-Z, 90=stbd/+X)
     var pNozRad=pNozDeg*D;
-    var pExhLocalX=Math.sin(pNozRad), pExhLocalZ=-Math.cos(pNozRad);
+    var pCppSign=ship.pCPP>=0?1:-1;  // REVERSE when AS!
+    var pExhLocalX=Math.sin(pNozRad)*pCppSign, pExhLocalZ=-Math.cos(pNozRad)*pCppSign;
     // Local→World rotation
     var pExhWX=pExhLocalX*cosH - pExhLocalZ*sinH;
     var pExhWZ=pExhLocalX*sinH + pExhLocalZ*cosH;
@@ -764,7 +764,8 @@ function updateBridgeView(t){
   // Stbd wake — CONTINUOUS
   if(playing && sPwr>0.005){
     var sNozRad=sNozDeg*D;
-    var sExhLocalX=Math.sin(sNozRad), sExhLocalZ=-Math.cos(sNozRad);
+    var sCppSign=ship.sCPP>=0?1:-1;  // REVERSE when AS!
+    var sExhLocalX=Math.sin(sNozRad)*sCppSign, sExhLocalZ=-Math.cos(sNozRad)*sCppSign;
     var sExhWX=sExhLocalX*cosH - sExhLocalZ*sinH;
     var sExhWZ=sExhLocalX*sinH + sExhLocalZ*cosH;
     var sSpd=2+sPwr*8;
