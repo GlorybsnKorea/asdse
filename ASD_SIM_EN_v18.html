@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
-<title>ASD Tug Bridge Simulator - Mobile Pro</title>
+<title>ASD Tugboat Maneuvering Technique Learning Simulator - Mobile Pro</title>
 <style>
 /* 원본 레이아웃 및 CSS 완벽 복구 */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -42,7 +42,7 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
     <span id="playStatus" style="color:#556655;font-weight:700">■ STANDBY</span>
     <button class="qbtn" onclick="toggleFullScreen()" style="background:rgba(100,150,255,0.2);border-color:rgba(100,150,255,0.5);color:#88ccff;">⛶ FULLSCREEN</button>
     <button class="qbtn" onclick="doReset()">⟳ RESET</button>
-    <button class="qbtn" onclick="toggleView()" id="viewBtn" style="background:rgba(0,238,136,0.2);border-color:rgba(0,238,136,0.5);color:#00ee88;font-weight:700;font-size:11px;padding:3px 10px">👁️ 시점: 드론뷰</button>
+    <button class="qbtn" onclick="toggleView()" id="viewBtn" style="background:rgba(0,238,136,0.2);border-color:rgba(0,238,136,0.5);color:#00ee88;font-weight:700;font-size:11px;padding:3px 10px">👁️ Drone View</button>
     <button class="qbtn" onclick="toggleHelp()" style="background:rgba(0,150,220,0.2);border-color:rgba(0,150,220,0.5);color:#40bbee;font-weight:700;font-size:11px;padding:3px 10px">? HELP</button>
   </div>
 </div>
@@ -407,8 +407,8 @@ var isThirdPersonView = true;
 function toggleView() {
   isThirdPersonView = !isThirdPersonView;
   var btn = document.getElementById('viewBtn');
-  if(isThirdPersonView) {btn.innerHTML='👁️ 시점: 드론뷰';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}
-  else {btn.innerHTML='👁️ 시점: 1인칭';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
+  if(isThirdPersonView) {btn.innerHTML='👁️ Drone View';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}
+  else {btn.innerHTML='👁️ Bridge View';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
 }
 
 // ── ★ 물리 엔진 완벽 수정 (0도 추력, 횡방향 교정, 20% 변침저하, 15노트 최고속력 유지) ──
