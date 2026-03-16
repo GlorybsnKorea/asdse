@@ -38,7 +38,7 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
     <span>S-RPM <b id="valSRpm" style="color:#f0a040">OFF</b></span>
     <span id="playStatus" style="color:#556655;font-weight:700">■ STANDBY</span>
     <button class="qbtn" onclick="doReset()">⟳ RESET</button>
-    <button class="qbtn" onclick="toggleView()" id="viewBtn" style="background:rgba(0,238,136,0.2);border-color:rgba(0,238,136,0.5);color:#00ee88;font-weight:700;font-size:11px;padding:3px 10px">👁️ 시점: 드론뷰</button>
+    <button class="qbtn" onclick="toggleView()" id="viewBtn" style="background:rgba(0,238,136,0.2);border-color:rgba(0,238,136,0.5);color:#00ee88;font-weight:700;font-size:11px;padding:3px 10px">👁️ Drone View</button>
     <button class="qbtn" onclick="toggleHelp()" style="background:rgba(0,150,220,0.2);border-color:rgba(0,150,220,0.5);color:#40bbee;font-weight:700;font-size:11px;padding:3px 10px">? HELP</button>
   </div>
 </div>
@@ -56,13 +56,13 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
     <b style="color:#0066aa;font-size:15px">🎮 Controls</b>
     <table style="width:100%;border-collapse:collapse;margin:8px 0 16px 0;font-size:12.5px">
       <tr style="background:#d8e4d6"><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8;width:40%">Function</td><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8">Keyboard</td><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8">Mouse / Touch</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Steering (Helm)</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>A</b> / <b>D</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag C-ring wheel</td></tr>
-      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port CPP Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>W</b>(↑) / <b>S</b>(↓)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag left lever</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd CPP Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>↑</b> / <b>↓</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag right lever</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Steering Combination Handle</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>A</b> / <b>D</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">Turn Combination Steering wheel</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port Steering Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>W</b>(↑) / <b>S</b>(↓)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag left lever</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd Steering Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>↑</b> / <b>↓</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag right lever</td></tr>
       <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port Governor</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Q</b>(+) / <b>E</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag left slider</td></tr>
       <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd Governor</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Z</b>(+) / <b>X</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag right slider</td></tr>
-      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port CPP Blade</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>I</b>(AH) / <b>K</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP left slider</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd CPP Blade</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>O</b>(AH) / <b>L</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP right slider</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port CPP Angle Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>I</b>(AH) / <b>K</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP left slider</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd CPP Angle Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>O</b>(AH) / <b>L</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP right slider</td></tr>
       <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Start / Stop</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>P</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">▶ PLAY button</td></tr>
     </table>
   </div>
@@ -391,8 +391,8 @@ var isThirdPersonView = true;
 function toggleView() {
   isThirdPersonView = !isThirdPersonView;
   var btn = document.getElementById('viewBtn');
-  if(isThirdPersonView) {btn.innerHTML='👁️ 시점: 드론뷰';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}
-  else {btn.innerHTML='👁️ 시점: 1인칭';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
+  if(isThirdPersonView) {btn.innerHTML='👁️ Drone View';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}
+  else {btn.innerHTML='👁️ Bridge View';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
 }
 
 // ── ★ 물리 엔진 완벽 수정 (최고 15Knots 교정 포함) ──
