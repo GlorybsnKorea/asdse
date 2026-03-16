@@ -284,17 +284,18 @@ function pI(){
 }
 
 // ══════════════════════════════════════════════════════════
-//  2. THREE.JS — BRIDGE 3D VIEW & PHYSICS (★ 최종 완벽 수정 ★)
+//  2. THREE.JS — BRIDGE 3D VIEW & PHYSICS (★ 정밀 교정 구역 ★)
 // ══════════════════════════════════════════════════════════
 var bwEl=document.getElementById('bridgewrap'),bCanvas=document.getElementById('bridgeCanvas');
 var renderer=new THREE.WebGLRenderer({canvas:bCanvas,antialias:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 var scene=new THREE.Scene();
 
-// 거대한 달(정반사) 삭제 및 맑은 청색 바다 세팅
+// 맑은 청색 바다 세팅
 scene.background=new THREE.Color(0x004488);
 var camera=new THREE.PerspectiveCamera(60,1,0.1,8000);
 
 scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+// 바다 표면에 빛을 반사시키는 태양광 약화
 var sun=new THREE.DirectionalLight(0xffffff, 0.5); sun.position.set(100, 500, 100); scene.add(sun);
 
 var OCEAN_W=8000,OCEAN_SEGS=64;var oceanGeo=new THREE.PlaneGeometry(OCEAN_W,OCEAN_W,OCEAN_SEGS,OCEAN_SEGS);oceanGeo.rotateX(-Math.PI/2);
@@ -394,27 +395,22 @@ function toggleView() {
   else {btn.innerHTML='👁️ 시점: 1인칭';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
 }
 
-// ── ★ 물리 엔진 완벽 수정 (0도 추력, 횡방향 교정, 20% 변침저하) ──
+// ── ★ 물리 엔진 완벽 수정 (최고 15Knots 교정 포함) ──
 var lt=0;
 function uP(){
   var n=Date.now();if(lt===0){lt=n;return;}var dt=Math.min((n-lt)/16.67,3);lt=n;
   
-  // 저부하 속도 둔감화 (Curve 적용)
   var pg=Math.pow(ship.pGov/10, 2), sg=Math.pow(ship.sGov/10, 2);
   var pF=Math.pow(Math.abs(ship.pCPP)/27, 1.5), sF=Math.pow(Math.abs(ship.sCPP)/27, 1.5);
   
-  // ★ 스티어링 각도가 0일 때 추력이 발생하지 않던 버그 완벽 제거! (Math.abs(ship.pt/90) 삭제)
   var ptE = ship.pGov > 0 ? pg * pF * (ship.pCPP >= 0 ? 1 : -1) : 0;
   var sbE = ship.sGov > 0 ? sg * sF * (ship.sCPP >= 0 ? 1 : -1) : 0;
   
   var ptR=getPortThrust(ship.pt,ship.st)*D, sbR=getStbdThrust(ship.sb,ship.st)*D;
   var sfx=Math.sin(ptR)*ptE+Math.sin(sbR)*sbE, sfy=-Math.cos(ptR)*ptE-Math.cos(sbR)*sbE;
   
-  // ★ 1. 레버 교차 (V자) 방식 횡이동
   var isCrabPort = (ship.pt <= -25 && ship.pt >= -65 && ship.sb >= 25 && ship.sb <= 65) && Math.abs(ship.st) < 20;
   var isCrabStbd = (ship.pt >= 25 && ship.pt <= 65 && ship.sb <= -25 && ship.sb >= -65) && Math.abs(ship.st) < 20;
-  
-  // ★ 2. 레버 0도 (Transverse) + 콤비네이션 핸들 조작 방식 횡이동 (요청사항 반영)
   var isComboPort = Math.abs(ship.pt) < 15 && Math.abs(ship.sb) < 15 && ship.st <= -25 && ship.st >= -55;
   var isComboStbd = Math.abs(ship.pt) < 15 && Math.abs(ship.sb) < 15 && ship.st >= 25 && ship.st <= 55;
 
@@ -423,25 +419,24 @@ function uP(){
   var isSliding = isSlidingPort || isSlidingStbd;
 
   if(isSliding) {
-    if(isSlidingPort) sfx = -(Math.abs(ptE) + Math.abs(sbE)) * 0.8; // 좌측으로 정상 횡이동
-    else sfx = (Math.abs(ptE) + Math.abs(sbE)) * 0.8; // 우측으로 정상 횡이동
-    sfy *= 0.1; // 전후진 상쇄
-    ship.om *= 0.5; // 선회 억제
+    if(isSlidingPort) sfx = -(Math.abs(ptE) + Math.abs(sbE)) * 0.8; 
+    else sfx = (Math.abs(ptE) + Math.abs(sbE)) * 0.8; 
+    sfy *= 0.1; 
+    ship.om *= 0.5; 
   }
 
   var cH=Math.cos(ship.hd), sH=Math.sin(ship.hd);
   
-  // 최고 속력 15 Knots 스케일 조정 (0.035)
-  ship.vx+=(sfx*cH-sfy*sH)*0.035*dt; 
-  ship.vy+=(sfx*sH+sfy*cH)*0.035*dt;
+  // ★ 최고 속력 RPM 750, CPP 26 기준 15.0 Knots 도달하도록 가속 상수 교정 (0.00836)
+  ship.vx+=(sfx*cH-sfy*sH)*0.00836*dt; 
+  ship.vy+=(sfx*sH+sfy*cH)*0.00836*dt;
   
   if(!isSliding) {
     ship.om+=((-3.5)*(-Math.cos(ptR)*ptE)-16*(Math.sin(ptR)*ptE)+3.5*(-Math.cos(sbR)*sbE)-16*(Math.sin(sbR)*sbE))*0.00003*dt;
   }
   
-  // ★ 변침 시 유도 항력으로 인한 20% 속도 저하 로직 (Turning Drag)
   var turnRate = Math.abs(ship.om);
-  var fwdDrag = Math.max(0.80, 0.988 - turnRate * 2.5); // 변침 시 마찰이 강해져 속도가 약 80%로 하락
+  var fwdDrag = Math.max(0.80, 0.98 - turnRate * 2.5); 
   
   ship.vx*=Math.pow(fwdDrag,dt); ship.vy*=Math.pow(fwdDrag,dt); ship.om*=Math.pow(0.975,dt);
   var fV=ship.vx*sH-ship.vy*cH, lV=ship.vx*cH+ship.vy*sH; 
@@ -455,14 +450,12 @@ function uP(){
   trailTimer+=dt;
   if(trailTimer>15){trailTimer=0;addTrailPoint();}
 
-  // ★ 타각 방향에 맞춘 물보라 생성 로직 (선미 좌우 포켓 위치)
   var fX=Math.sin(ship.hd), fZ=-Math.cos(ship.hd), rX=Math.cos(ship.hd), rZ=Math.sin(ship.hd);
   var pTx = ship.x + rX*(-3.5) + fX*(-15);
   var pTz = ship.y + rZ*(-3.5) + fZ*(-15);
   var sTx = ship.x + rX*(3.5) + fX*(-15);
   var sTz = ship.y + rZ*(3.5) + fZ*(-15);
 
-  // 횡이동이든 아니든, 무조건 '현재 프로펠러가 바라보는 실제 방향(ptR, sbR)'으로 거센 물보라 뿜기
   if(Math.abs(ptE)>0.01 && Math.random()<0.9) {
     var pWF = -Math.cos(ptR)*ptE*12, pWR = -Math.sin(ptR)*ptE*12;
     for(var i=0; i<4; i++) spawnWake(pTx, 0.5, pTz, pWF*fX+pWR*rX, 0, pWF*fZ+pWR*rZ);
@@ -478,13 +471,11 @@ function el(tag,a){var e=document.createElementNS(ns,tag);for(var k in a)e.setAt
 svg.appendChild(el('rect',{x:0,y:0,width:W,height:14,fill:'#2a3428',opacity:0.9}));svg.appendChild(el('line',{x1:0,y1:14,x2:W,y2:14,stroke:'rgba(80,110,70,0.5)','stroke-width':1}));}
 
 function updateBridgeView(t){
-  // 파도 출렁임
   var pos=oceanGeo.attributes.position;for(var wi=0;wi<pos.count;wi++){var wx=pos.getX(wi),wz=pos.getZ(wi);pos.setY(wi,oceanOrigY[wi]+Math.sin(wx*0.04+t)*0.5+Math.sin(wz*0.03+t*0.8)*0.3);}pos.needsUpdate=true;
   ocean.position.x=ship.x;ocean.position.z=ship.y;
   var fX=Math.sin(ship.hd),fZ=-Math.cos(ship.hd);
   
   if(isThirdPersonView) {
-    // 드론 시점(부감) 고정: 배 위를 높게 비행
     camera.position.set(ship.x - fX*40, 150, ship.y - fZ*40);
     camera.lookAt(ship.x + fX*10, 0, ship.y + fZ*10);
   } else {
@@ -495,7 +486,6 @@ function updateBridgeView(t){
   ownShipGrp.position.set(ship.x, 0, ship.y);
   ownShipGrp.rotation.y = -ship.hd;
   
-  // 파티클 물보라 증발 및 이동
   for(var wi2=0;wi2<WAKE_N;wi2++){
     if(wakeActive[wi2]>0){
       wakeActive[wi2]-=0.008; 
@@ -541,7 +531,7 @@ function mainLoop(){
 }
 mainLoop();
 </script>
-<div style="position:fixed;bottom:2px;right:8px;font-size:9px;color:rgba(255,255,255,0.85);pointer-events:none;z-index:5;font-family:monospace">© Copyright by G.Y.Lee</div>
+<div style="position:fixed;bottom:2px;right:8px;font-size:9px;color:rgba(255,255,255,0.85);pointer-events:none;z-index:5;font-family:monospace">© Copyright by G.Y.Lee </div>
 
 </body>
 </html>
