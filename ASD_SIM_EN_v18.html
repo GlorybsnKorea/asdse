@@ -2,15 +2,19 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.3, maximum-scale=5.0, user-scalable=yes">
-<title>Tugboat maneuvering Simulator V321</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.3, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<title>Rex-Peller Tugboat Maneuvering Simulator - Mobile Pro V321</title>
 <style>
+/* 원본 레이아웃 및 CSS 완벽 복구 */
 *{margin:0;padding:0;box-sizing:border-box}
 body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Courier New',monospace;color:#c0d4e8;user-select:none;display:flex;flex-direction:column}
 #topbar{display:flex;align-items:center;justify-content:space-between;padding:5px 14px;background:rgba(4,10,20,0.98);border-bottom:2px solid rgba(60,90,60,0.5);font-size:11px;flex-shrink:0;flex-wrap:wrap;gap:10px;z-index:10}
 #bridgewrap{flex:6;position:relative;min-height:0;background:#000;overflow:hidden}
 #bridgeCanvas{width:100%;height:100%;display:block}
-#winFrame{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;display:none}
+#winFrame{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
 #keyhint{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.65);border-radius:5px;padding:5px 9px;font-size:9px;line-height:1.7;color:rgba(180,200,180,0.55);pointer-events:none}
 #controlWrap{flex:4;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(180deg,#6a8a62,#5a7a52);border-top:3px solid rgba(80,120,70,0.7);touch-action:pinch-zoom}
 #controlPanel{padding:4px 10px;display:flex;align-items:center;justify-content:center;gap:18px;transform-origin:center center}
@@ -19,345 +23,380 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
 .gc{display:flex;flex-direction:column;align-items:center;gap:2px}
 .gt{font-size:10px;font-weight:700;letter-spacing:1.5px;color:#f0f8e8}
 .sec-title{font-size:9px;font-weight:700;letter-spacing:2px;color:#e0f0d0;border:1px solid rgba(200,230,180,0.4);padding:2px 14px;border-radius:3px;margin-bottom:4px;background:rgba(0,0,0,0.2);text-align:center;white-space:nowrap}
-#hud{position:absolute;top:10px;left:10px;background:rgba(2,8,18,0.88);border:1px solid rgba(0,200,255,0.35);border-radius:8px;padding:10px 14px;font-family:'Courier New',monospace;font-size:11px;pointer-events:none;min-width:210px;display:none;backdrop-filter:blur(4px)}
-#hud .hud-title{color:#00d4ff;font-weight:700;letter-spacing:2px;font-size:10px;border-bottom:1px solid rgba(0,200,255,0.3);padding-bottom:5px;margin-bottom:7px;text-align:center}
-#hud .hud-row{display:flex;justify-content:space-between;margin-bottom:4px;align-items:center}
-#hud .hud-label{color:rgba(180,200,220,0.6);font-size:9px;letter-spacing:1px}
-#hud .hud-val{font-weight:700;font-size:12px}
-.bar-wrap{width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-top:2px}
-.bar-fill{height:100%;border-radius:3px;transition:width 0.15s,background 0.3s}
-#phaseWrap{margin-top:8px;border-top:1px solid rgba(0,200,255,0.2);padding-top:7px}
-#phaseLabel{font-size:11px;font-weight:700;letter-spacing:1.5px;text-align:center;margin-bottom:6px}
-.phase-dots{display:flex;gap:4px;justify-content:center}
-.pdot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);transition:all 0.4s}
-.pdot.active{background:#00ee88;border-color:#00ee88;box-shadow:0 0 6px #00ee88}
-.pdot.done{background:#2299aa;border-color:#2299aa}
-#dirBox{position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,0.75);border:1px solid rgba(0,200,255,0.35);border-radius:4px;padding:4px 12px;font-size:11px;font-weight:700;color:#00d4ff;pointer-events:none}
-#berthedOverlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:20}
-#berthedOverlay .b-msg{font-size:42px;font-weight:900;letter-spacing:4px;color:#ffdd00;text-shadow:0 0 30px #ffaa00,0 0 60px #ff6600;animation:blink 0.6s infinite}
-#berthedOverlay .b-sub{font-size:14px;color:#aaddff;letter-spacing:2px;margin-top:8px}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
-#spdWarning{display:none;margin-top:8px;text-align:center;color:#ff4444;font-weight:700;font-size:10px;letter-spacing:1px;animation:blink 0.5s infinite}
-@media(max-width:900px){#keyhint{display:none}}
+#dbg{position:absolute;bottom:6px;left:8px;background:rgba(0,0,0,0.7);border-radius:3px;padding:3px 7px;font-size:9px;color:#6a9a6a;pointer-events:none}
+#dirBox{position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,0.75);border:1px solid rgba(0,200,255,0.35);border-radius:4px;padding:4px 12px;font-size:11px;font-weight:700;color:#00d4ff;pointer-events:none;letter-spacing:0.5px}
+@media(max-width:900px){body{flex-direction:column} #topbar{font-size:10px;padding:3px 8px;gap:6px} #topbar b{font-size:10px} #keyhint{display:none} #dbg{display:none}}
+@media(max-height:500px){#bridgewrap{flex:5} #controlWrap{flex:5}}
+@media(max-width:500px){#topbar span{font-size:9px}}
 </style>
 </head>
 <body>
-
 <div id="topbar">
   <span style="color:#8ad870;font-weight:700;font-size:13px;letter-spacing:1px">⚓ Tugboat Maneuvering Simulator <span style="color:#446644;font-size:9px">V321</span></span>
-  <div style="display:flex;gap:14px;align-items:center;font-size:11px;flex-wrap:wrap">
+  <div style="display:flex;gap:16px;align-items:center;font-size:11px">
     <span>HDG <b id="valHdg" style="color:#edc740">090°</b></span>
     <span>SPD <b id="valSpd" style="color:#4dd88a">0.0 kts</b></span>
     <span>STR <b id="valStr" style="color:#aaa">0°</b></span>
     <span>P-RPM <b id="valPRpm" style="color:#f0a040">OFF</b></span>
     <span>S-RPM <b id="valSRpm" style="color:#f0a040">OFF</b></span>
     <span id="playStatus" style="color:#556655;font-weight:700">■ STANDBY</span>
-    <button class="qbtn" id="autoBtn" onclick="toggleAuto()"
-      style="background:rgba(100,200,255,0.2);border-color:rgba(100,200,255,0.5);color:#88ccff;font-weight:700;font-size:11px;padding:3px 12px;letter-spacing:1px">
-   
-    </button>
-    <button class="qbtn" onclick="toggleFullScreen()" style="background:rgba(100,150,255,0.2);border-color:rgba(100,150,255,0.5);color:#88ccff;">⛶ FULL</button>
+    <button class="qbtn" onclick="toggleFullScreen()" style="background:rgba(100,150,255,0.2);border-color:rgba(100,150,255,0.5);color:#88ccff;">⛶ FULLSCREEN</button>
     <button class="qbtn" onclick="doReset()">⟳ RESET</button>
-    <button class="qbtn" onclick="toggleView()" id="viewBtn"
-      style="background:rgba(0,238,136,0.2);border-color:rgba(0,238,136,0.5);color:#00ee88;font-weight:700;font-size:11px;padding:3px 10px">👁️ Drone View</button>
+    <button class="qbtn" onclick="toggleView()" id="viewBtn" style="background:rgba(0,238,136,0.2);border-color:rgba(0,238,136,0.5);color:#00ee88;font-weight:700;font-size:11px;padding:3px 10px">👁️ Drone View</button>
+    <button class="qbtn" onclick="toggleHelp()" style="background:rgba(0,150,220,0.2);border-color:rgba(0,150,220,0.5);color:#40bbee;font-weight:700;font-size:11px;padding:3px 10px">? HELP</button>
   </div>
+</div>
+
+<div id="helpOverlay" onclick="if(event.target===this)toggleHelp()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+<div id="helpBox" style="background:linear-gradient(135deg,#f4f6f3,#e8ebe6);color:#1a2a1a;border-radius:16px;max-width:680px;width:92vw;max-height:85vh;overflow-y:auto;padding:0;box-shadow:0 20px 60px rgba(0,0,0,0.5);font-family:sans-serif;position:relative">
+  <div style="background:linear-gradient(135deg,#2a3a28,#3a4a38);color:#e0f0d8;padding:18px 24px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:18px;font-weight:900;letter-spacing:2px">⚓ USER MANUAL</div>
+    <button onclick="toggleHelp()" style="background:none;border:2px solid rgba(255,255,255,0.3);color:#fff;font-size:18px;width:36px;height:36px;border-radius:50%;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center">✕</button>
+  </div>
+  <div style="padding:20px 24px 24px 24px;font-size:13.5px;line-height:2">
+    <div style="background:#2a3a28;color:#a0d890;border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:12px;line-height:1.8">
+      <b style="color:#edc740;font-size:14px">Tugboat Maneuvering Simulator V321</b><br>A 3D maneuvering simulator for Azimuth Stern Drive (ASD) tugboats. Observe accurate Z-Drive thrust vectoring.
+    </div>
+    <b style="color:#0066aa;font-size:15px">🎮 Controls</b>
+    <table style="width:100%;border-collapse:collapse;margin:8px 0 16px 0;font-size:12.5px">
+      <tr style="background:#d8e4d6"><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8;width:40%">Function</td><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8">Keyboard</td><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8">Mouse / Touch</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Steering (Helm)</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>A</b> / <b>D</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag C-ring wheel</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port CPP Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>W</b>(↑) / <b>S</b>(↓)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag left lever</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd CPP Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>↑</b> / <b>↓</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag right lever</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port Governor</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Q</b>(+) / <b>E</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag left slider</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd Governor</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Z</b>(+) / <b>X</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag right slider</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port CPP Blade</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>I</b>(AH) / <b>K</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP left slider</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd CPP Blade</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>O</b>(AH) / <b>L</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP right slider</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Start / Stop</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>P</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">▶ PLAY button</td></tr>
+    </table>
+  </div>
+</div>
 </div>
 
 <div id="bridgewrap">
   <canvas id="bridgeCanvas"></canvas>
-  <svg id="winFrame" xmlns="http://www.w3.org/2000/svg"></svg>
-  <div id="keyhint">Steer: A/D · Port: W/S · Stbd: ↑/↓  P-Gov: Q/E · S-Gov: Z/X · Play: P</div>
- 
-
-  <div id="hud">
-    
-    <div class="hud-row"><span class="hud-label">DIST TO BERTH</span><span id="hudDist" class="hud-val" style="color:#4dd88a">--- m</span></div>
-    <div class="bar-wrap"><div id="distBar" class="bar-fill" style="width:0%;background:#4dd88a"></div></div>
-    <div class="hud-row" style="margin-top:6px"><span class="hud-label">APPROACH SPD</span><span id="hudSpd" class="hud-val" style="color:#4dd88a">0.00 kts</span></div>
-    <div class="bar-wrap"><div id="spdBar" class="bar-fill" style="width:0%;background:#4dd88a"></div></div>
-    <div class="hud-row" style="margin-top:6px"><span class="hud-label">LATERAL OFFSET</span><span id="hudLat" class="hud-val" style="color:#aaa">0.0 m</span></div>
-    <div class="hud-row"><span class="hud-label">HDG ERROR</span><span id="hudHdg" class="hud-val" style="color:#aaa">0.0°</span></div>
-    <div id="phaseWrap">
-      <div id="phaseLabel" style="color:#ffcc00">● STANDBY</div>
-      <div class="phase-dots">
-        <div class="pdot" id="pd1"></div><div class="pdot" id="pd2"></div>
-        <div class="pdot" id="pd3"></div><div class="pdot" id="pd4"></div>
-        <div class="pdot" id="pd5"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:7px;color:rgba(180,200,220,0.5);margin-top:3px;padding:0 2px">
-        <span>TRANSIT</span><span>ALIGN</span><span>APPR</span><span>FINAL</span><span>DOCK</span>
-      </div>
-    </div>
-    <div id="spdWarning">⚠ SPEED TOO HIGH</div>
-  </div>
-
-  <div id="berthedOverlay">
-    <div class="b-msg">⚓ BERTHED!</div>
-    <div class="b-sub">AUTO-BERTHING COMPLETE</div>
-    <div id="berthedStats" style="margin-top:10px;font-size:11px;color:#88ddff;letter-spacing:1px"></div>
-  </div>
+  <svg id="winFrame" xmlns="http://www.w3.org/2000/svg" style="display:none"></svg>
+  <div id="keyhint">Steer: A/D · Port CPP: W/S · Stbd CPP: ↑/↓<br>P-Gov: Q/E · S-Gov: Z/X · Play: P · E-Stop: Space</div>
+  <div id="dbg"></div>
+  
 </div>
 
 <div id="controlWrap">
-  <div id="controlPanel">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-right:8px;">
-      <div class="sec-title">COMPASS</div>
-      <canvas id="compassCanvas" width="170" height="175"></canvas>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:0">
-      <div class="sec-title">STEERING — COMBINATION HANDLE</div>
-      <div style="display:flex;align-items:flex-start;gap:4px">
-        <div class="gc"><span class="gt" style="color:#ff6666">PORT</span><canvas id="portGauge" width="170" height="175"></canvas></div>
-        <canvas id="comboCanvas" width="260" height="235" style="cursor:grab;touch-action:pinch-zoom;margin-top:18px"></canvas>
-        <div class="gc"><span class="gt" style="color:#66ff88">STB'D</span><canvas id="stbdGauge" width="170" height="175"></canvas></div>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-      <div class="sec-title">GOVERNOR</div>
-      <canvas id="govCanvas" width="220" height="215" style="cursor:pointer;touch-action:pinch-zoom"></canvas>
-      <div style="display:flex;gap:6px;margin-top:2px">
-        <button class="qbtn" onclick="aS()">⬛ ALL STOP</button>
-        <button id="playBtn" style="background:rgba(0,0,0,0.25);border:2px solid rgba(0,255,100,0.5);color:#00ee88;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px" onclick="togglePlay()">▶ PLAY</button>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-      <div class="sec-title">CPP LEVER</div>
-      <canvas id="cppCanvas" width="180" height="215" style="cursor:pointer;touch-action:pinch-zoom"></canvas>
+<div id="controlPanel">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-right:8px;">
+    <div class="sec-title">COMPASS</div>
+    <canvas id="compassCanvas" width="170" height="175"></canvas>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+    <div class="sec-title">STEERING — COMBINATION HANDLE</div>
+    <div style="display:flex;align-items:flex-start;gap:4px">
+      <div class="gc"><span class="gt" style="color:#ff6666">PORT</span><canvas id="portGauge" width="170" height="175"></canvas></div>
+      <canvas id="comboCanvas" width="260" height="235" style="cursor:grab;touch-action:pinch-zoom;margin-top:18px"></canvas>
+      <div class="gc"><span class="gt" style="color:#66ff88">STB'D</span><canvas id="stbdGauge" width="170" height="175"></canvas></div>
     </div>
   </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+    <div class="sec-title">GOVERNOR</div>
+    <canvas id="govCanvas" width="220" height="215" style="cursor:pointer;touch-action:pinch-zoom"></canvas>
+    <div style="display:flex;gap:6px;margin-top:2px">
+      <button class="qbtn" onclick="aS()">⬛ ALL STOP</button>
+      <button id="playBtn" style="background:rgba(0,0,0,0.25);border:2px solid rgba(0,255,100,0.5);color:#00ee88;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px" onclick="togglePlay()">▶ PLAY</button>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+    <div class="sec-title">CPP LEVER</div>
+    <canvas id="cppCanvas" width="180" height="215" style="cursor:pointer;touch-action:pinch-zoom"></canvas>
+  </div>
+</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 "use strict";
-// ══════════════════════════════════════════════════════════
-//  GLOBAL CONSTANTS
-// ══════════════════════════════════════════════════════════
-var D = Math.PI/180, R2D = 180/Math.PI;
 
-// ★ 속도표시: V318 방식 *20 (물리상수 0.00836 기준 양기 최대 ≈15 kts)
-var SPDSCALE = 20;
-
-// ─── Berth geometry ───────────────────────────────────────
-// 출항 후 500 m 전방 우현 부두에 우현 접안 (stbd pier inner face z=+100)
-// 선체 반폭 ≈ 8 m → 선체 중심 y = 92 일때 우현면 z = +100 ✓
-var DOCK_X  = 250;   // 목표 접안 X 좌표 (stbd pier 중간)
-var DOCK_Y  = 92;    // 접안 시 선체 중심 Y (우현측 접안)
-var WP_X    = 70;    // 접근 웨이포인트 X  (pier 진입 전)
-var WP_Y    = 46;    // 접근 웨이포인트 Y  (측방 중간)
-
-// ─── Initial berth ─────────────────────────────────────────
-// 선체는 x=-400, y=0 위치에 좌현(port)측을 부두에 붙여 접안된 상태로 시작
-// 부두 면: world z = -9  (선체 좌현면 z ≈ -8)
-var START_X = -400;
-var START_Y = 0;
-
-var ship = {x:START_X, y:START_Y, vx:0, vy:0, hd:Math.PI/2, om:0,
-            st:0, pt:0, sb:0, pGov:0, sGov:0, pCPP:0, sCPP:0};
-var playing = false, pk = {};
-var autoMode = 0, autoPhase = 0;
-var PHASE_LABELS = ['STANDBY','TRANSIT','ALIGN','APPROACH','FINAL','⚓ BERTHED!'];
-var PHASE_COLORS = ['#888','#ffcc00','#ff9900','#66aaff','#44ff88','#ffdd00'];
-
-// ══════════════════════════════════════════════════════════
-//  UTILITIES
-// ══════════════════════════════════════════════════════════
-function toggleFullScreen(){
-  if(!document.fullscreenElement) document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
-  setTimeout(resizeBridge,300);
+// ★ 전체화면 토글 함수 (모바일 편의성 위해 유지)
+function toggleFullScreen() {
+  if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement) {
+    if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    else if (document.documentElement.mozRequestFullScreen) { document.documentElement.mozRequestFullScreen(); }
+    else if (document.documentElement.webkitRequestFullscreen) { document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT); }
+  } else {
+    if (document.cancelFullScreen) { document.cancelFullScreen(); }
+    else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+    else if (document.webkitCancelFullScreen) { document.webkitCancelFullScreen(); }
+  }
+  setTimeout(resizeBridge, 300);
 }
-document.addEventListener('keydown',function(e){
-  if((e.key==='p'||e.key==='P')&&!pk[e.key]) togglePlay();
-  pk[e.key]=true;
-  if([' ','ArrowUp','ArrowDown'].indexOf(e.key)!==-1) e.preventDefault();
-});
+
+// =========================================================================
+// 1. 원본 UI 및 컨트롤 로직 (100% 원본 유지)
+// =========================================================================
+var D=Math.PI/180, R2D=180/Math.PI;
+// ★ 초기 위치: 부두에 우현(Starboard, +Z) 접안 상태 (선수 동쪽)
+// ★ 펜더 치수 기준 접안 위치
+//   본선 펜더: 선체(x=8.0)에서 0.5m 돌출 → 외측 z = ship.y + 8.5
+//   부두 펜더: 부두면(z=12.0)에서 0.5m 돌출 → 외측 z = 11.5
+//   접촉조건: ship.y + 8.5 = 11.5  →  ship.y = 3.0
+var ship={x:270,y:3.0,vx:0,vy:0,hd:Math.PI/2,om:0,st:0,pt:0,sb:0,pGov:0,sGov:0,pCPP:0,sCPP:0};
+var playing=false, pk={};
+document.addEventListener('keydown',function(e){if((e.key==='p'||e.key==='P')&&!pk[e.key])togglePlay();pk[e.key]=true;if([' ','ArrowUp','ArrowDown'].indexOf(e.key)!==-1)e.preventDefault();});
 document.addEventListener('keyup',function(e){pk[e.key]=false;});
+
 function getPortThrust(lv,st){return((90-lv-st)%360+360)%360;}
 function getStbdThrust(lv,st){return((270+lv-st)%360+360)%360;}
 function govRpm(gov){if(gov<=0)return 0;return Math.round(410+(gov-1)*(350/9));}
 function govOn(gov){return gov>0;}
 function rR(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();}
 
-// ══════════════════════════════════════════════════════════
-//  2D GAUGE DRAWING (unchanged)
-// ══════════════════════════════════════════════════════════
-function drawGauge(id,needleCol,thrustDeg){var cv=document.getElementById(id),c=cv.getContext('2d');c.clearRect(0,0,170,175);var cx=85,cy=85,r=62;c.beginPath();c.arc(cx,cy,r+12,0,Math.PI*2);var bg=c.createRadialGradient(cx-4,cy-4,r-4,cx,cy,r+12);bg.addColorStop(0,'#b0b8b0');bg.addColorStop(0.5,'#888e88');bg.addColorStop(1,'#606860');c.fillStyle=bg;c.fill();c.strokeStyle='#444';c.lineWidth=1.5;c.stroke();c.beginPath();c.arc(cx,cy,r+3,0,Math.PI*2);c.fillStyle='#2a2a2a';c.fill();var fg=c.createRadialGradient(cx-10,cy-10,4,cx,cy,r+2);fg.addColorStop(0,'#eaeae2');fg.addColorStop(0.65,'#d8d8d0');fg.addColorStop(1,'#c8c8c0');c.beginPath();c.arc(cx,cy,r+2,0,Math.PI*2);c.fillStyle=fg;c.fill();for(var deg=0;deg<360;deg+=10){var rad=(deg-90)*D,isMaj=(deg%30===0),oRr=r,iRr=isMaj?(r-14):(r-7);c.beginPath();c.moveTo(cx+Math.cos(rad)*iRr,cy+Math.sin(rad)*iRr);c.lineTo(cx+Math.cos(rad)*oRr,cy+Math.sin(rad)*oRr);c.strokeStyle=isMaj?'rgba(0,0,0,0.75)':'rgba(0,0,0,0.22)';c.lineWidth=isMaj?1.6:0.7;c.stroke();if(isMaj){var sv=(deg<=180)?(90-deg):(deg-270),lbl;if(sv>0)lbl='AH'+sv;else if(sv<0)lbl='AS'+Math.abs(sv);else lbl='0';c.fillStyle='#111';c.font='bold 9px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(lbl,cx+Math.cos(rad)*(r-24),cy+Math.sin(rad)*(r-24));}}var nRad=(thrustDeg-90)*D,nCos=Math.cos(nRad),nSin=Math.sin(nRad),tipLen=r-6,baseLen=16,halfW=9,pX=-nSin,pY=nCos,tipX=cx+nCos*tipLen,tipY=cy+nSin*tipLen,baseX=cx-nCos*baseLen,baseY=cy-nSin*baseLen;c.beginPath();c.moveTo(tipX,tipY);c.lineTo(baseX+pX*halfW,baseY+pY*halfW);c.lineTo(baseX-pX*halfW,baseY-pY*halfW);c.closePath();c.fillStyle='#111';c.fill();c.strokeStyle='rgba(60,60,60,0.6)';c.lineWidth=0.8;c.stroke();c.beginPath();c.moveTo(cx+nCos*tipLen*0.15,cy+nSin*tipLen*0.15);c.lineTo(cx+nCos*tipLen*0.85,cy+nSin*tipLen*0.85);c.strokeStyle='#ffffff';c.lineWidth=2;c.lineCap='round';c.stroke();c.beginPath();c.arc(cx,cy,7,0,Math.PI*2);var hg=c.createRadialGradient(cx-2,cy-2,1,cx,cy,7);hg.addColorStop(0,'#777');hg.addColorStop(1,'#222');c.fillStyle=hg;c.fill();}
-var compCv=document.getElementById('compassCanvas'),compCtx=compCv.getContext('2d');
-function drawCompass(){var c=compCtx,cx=85,cy=87.5,R=73;c.clearRect(0,0,170,175);c.beginPath();c.arc(cx,cy,R+4,0,Math.PI*2);var bz=c.createRadialGradient(cx-4,cy-4,R-10,cx,cy,R+4);bz.addColorStop(0,'#b8c0b8');bz.addColorStop(0.5,'#808880');bz.addColorStop(1,'#505850');c.fillStyle=bz;c.fill();c.strokeStyle='#333';c.lineWidth=2;c.stroke();c.beginPath();c.arc(cx,cy,R,0,Math.PI*2);c.fillStyle='#12120f';c.fill();var hdgDeg=((ship.hd*R2D)+360)%360;c.save();c.translate(cx,cy);c.rotate(-hdgDeg*D);for(var deg=0;deg<360;deg+=5){var rad=deg*D,isMaj=(deg%30===0),isMid=(deg%10===0),oR=R-2,iR=isMaj?(R-20):(isMid?(R-13):(R-8));c.beginPath();c.moveTo(Math.sin(rad)*iR,-Math.cos(rad)*iR);c.lineTo(Math.sin(rad)*oR,-Math.cos(rad)*oR);c.strokeStyle=isMaj?'rgba(255,255,230,0.95)':(isMid?'rgba(200,200,180,0.6)':'rgba(160,160,140,0.3)');c.lineWidth=isMaj?2.2:(isMid?1.2:0.6);c.stroke();}[{a:0,l:'N',c:'#ff3333'},{a:90,l:'E',c:'#e0e0cc'},{a:180,l:'S',c:'#e0e0cc'},{a:270,l:'W',c:'#e0e0cc'}].forEach(function(cd){c.fillStyle=cd.c;c.font='bold 16px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(cd.l,Math.sin(cd.a*D)*(R-34),-Math.cos(cd.a*D)*(R-34));});c.restore();c.fillStyle='#edc740';c.beginPath();c.moveTo(cx,cy-R+1);c.lineTo(cx-6,cy-R+12);c.lineTo(cx+6,cy-R+12);c.closePath();c.fill();rR(c,cx-36,cy+R-18,72,22,5);c.fillStyle='rgba(0,0,0,0.88)';c.fill();c.strokeStyle='rgba(237,199,64,0.5)';c.lineWidth=1;c.stroke();c.fillStyle='#edc740';c.font='bold 16px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(('000'+Math.round(hdgDeg)).slice(-3)+'\u00B0',cx,cy+R-7);}
-function drawKnobHandle(c,cx,cy,col,size){size=size||14;var glow=c.createRadialGradient(cx,cy,size*0.3,cx,cy,size*1.8);glow.addColorStop(0,col.replace(')' ,',0.35)').replace('rgb','rgba'));glow.addColorStop(1,'rgba(0,0,0,0)');c.beginPath();c.arc(cx,cy,size*1.8,0,Math.PI*2);c.fillStyle=glow;c.fill();var body=c.createRadialGradient(cx-size*0.25,cy-size*0.25,size*0.05,cx,cy,size);body.addColorStop(0,'#555');body.addColorStop(0.35,'#181818');body.addColorStop(1,'#050505');c.beginPath();c.arc(cx,cy,size,0,Math.PI*2);c.fillStyle=body;c.fill();c.strokeStyle='rgba(80,90,80,0.6)';c.lineWidth=1;c.stroke();var ctr=c.createRadialGradient(cx-size*0.2,cy-size*0.25,size*0.05,cx-size*0.1,cy-size*0.1,size*0.55);ctr.addColorStop(0,'rgba(255,255,255,0.9)');ctr.addColorStop(0.4,col.replace(')' ,',0.7)').replace('rgb','rgba'));ctr.addColorStop(1,'rgba(0,0,0,0)');c.beginPath();c.arc(cx-size*0.1,cy-size*0.1,size*0.55,0,Math.PI*2);c.fillStyle=ctr;c.fill();}
-var govCv=document.getElementById('govCanvas'),govCtx=govCv.getContext('2d');
-function drawGovColumn(c,gov,col,label,isPort){var tX=isPort?95:125,tT=22,tB=155,trkH=tB-tT,boxX=isPort?16:148,labelX=isPort?44:176;c.fillStyle=col;c.font='bold 10px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(label,labelX,11);rR(c,tX-5,tT,10,trkH,5);var trkG=c.createLinearGradient(tX-5,0,tX+5,0);trkG.addColorStop(0,'rgba(50,50,45,0.9)');trkG.addColorStop(0.5,'rgba(70,75,65,0.7)');trkG.addColorStop(1,'rgba(40,40,35,0.9)');c.fillStyle=trkG;c.fill();c.strokeStyle='rgba(80,100,80,0.5)';c.lineWidth=1;c.stroke();for(var i=0;i<=10;i++){var yy=tB-(i/10)*trkH,isMaj=(i%2===0||i===1);c.beginPath();if(isPort){c.moveTo(tX-12,yy);c.lineTo(tX-6,yy);}else{c.moveTo(tX+6,yy);c.lineTo(tX+12,yy);}c.strokeStyle=isMaj?'rgba(220,230,210,0.7)':'rgba(200,210,190,0.35)';c.lineWidth=isMaj?1.5:0.8;c.stroke();c.fillStyle='#e8f0e0';c.font='bold 12px "Courier New",monospace';c.textAlign=isPort?'right':'left';c.textBaseline='middle';c.fillText(''+i,isPort?(tX-14):(tX+14),yy);}var yC=tB-(1/10)*trkH;c.beginPath();c.moveTo(tX-12,yC);c.lineTo(tX+12,yC);c.strokeStyle='rgba(220,60,60,0.65)';c.lineWidth=1.2;c.setLineDash([3,2]);c.stroke();c.setLineDash([]);var hY=tB-(gov/10)*trkH;drawKnobHandle(c,tX,hY,gov<=0?'rgb(160,60,60)':'rgb(200,160,40)',12);var boxY=Math.max(5,Math.min(215-36-5,hY-18));rR(c,boxX,boxY,56,36,5);c.fillStyle='rgba(0,0,0,0.92)';c.fill();c.strokeStyle=govOn(gov)?'rgba(0,220,100,0.6)':'rgba(220,60,60,0.55)';c.lineWidth=1.5;c.stroke();c.textAlign='center';c.textBaseline='middle';if(govOn(gov)){c.fillStyle='#00ee88';c.font='bold 15px "Courier New",monospace';c.fillText(govRpm(gov),boxX+28,boxY+12);c.fillStyle='rgba(0,180,100,0.7)';c.font='bold 7px monospace';c.fillText('RPM',boxX+28,boxY+26);}else{c.fillStyle='#ee4444';c.font='bold 9px "Courier New",monospace';c.fillText('CLUTCH',boxX+28,boxY+12);c.fillText('OFF',boxX+28,boxY+26);}}
-function drawGov(){var c=govCtx;c.clearRect(0,0,220,215);rR(c,2,2,216,211,8);var pgrd=c.createLinearGradient(0,0,0,215);pgrd.addColorStop(0,'rgba(85,115,78,0.97)');pgrd.addColorStop(1,'rgba(70,100,65,0.97)');c.fillStyle=pgrd;c.fill();c.strokeStyle='rgba(120,160,110,0.5)';c.lineWidth=1.5;c.stroke();drawGovColumn(c,ship.pGov,'#ff6666','PORT',true);drawGovColumn(c,ship.sGov,'#66ff88','STBD',false);}
-var cppCv=document.getElementById('cppCanvas'),cppCtx=cppCv.getContext('2d');
-function drawCppColumn(c,cpp,col,label,isPort){var tX=isPort?75:105,tT=24,tB=170,trkH=tB-tT,boxX=isPort?8:120,labelX=isPort?34:146;c.fillStyle=col;c.font='bold 10px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(label,labelX,11);rR(c,tX-5,tT,10,trkH,5);var trkG=c.createLinearGradient(tX-5,0,tX+5,0);trkG.addColorStop(0,'rgba(50,50,45,0.9)');trkG.addColorStop(0.5,'rgba(70,75,65,0.7)');trkG.addColorStop(1,'rgba(40,40,35,0.9)');c.fillStyle=trkG;c.fill();c.strokeStyle='rgba(80,100,80,0.5)';c.lineWidth=1;c.stroke();[{v:27,l:'AH27'},{v:20,l:'20'},{v:10,l:'10'},{v:0,l:'0'},{v:-10,l:'10'},{v:-22,l:'AS22'}].forEach(function(m){var yy=tT+((27-m.v)/49)*trkH,isMaj=m.v===27||m.v===0||m.v===-22;c.beginPath();if(isPort){c.moveTo(tX-12,yy);c.lineTo(tX-5,yy);}else{c.moveTo(tX+5,yy);c.lineTo(tX+12,yy);}c.strokeStyle=isMaj?'rgba(220,230,210,0.7)':'rgba(200,210,190,0.4)';c.lineWidth=isMaj?1.5:0.8;c.stroke();c.fillStyle=m.v>0?'#88bbff':(m.v<0?'#ffaa77':'#e8f0e0');c.font=isMaj?'bold 10px "Courier New",monospace':'bold 9px "Courier New",monospace';c.textAlign=isPort?'right':'left';c.textBaseline='middle';c.fillText(m.l,isPort?(tX-14):(tX+14),yy);});var hY=Math.max(tT,Math.min(tB,tT+((27-cpp)/49)*trkH)),isAH=cpp>=0;drawKnobHandle(c,tX,hY,isAH?'rgb(60,120,200)':'rgb(200,100,60)',12);var boxY=Math.max(5,Math.min(215-28-5,hY-14));rR(c,boxX,boxY,52,28,5);c.fillStyle='rgba(0,0,0,0.92)';c.fill();c.strokeStyle=isAH?'rgba(60,150,255,0.5)':'rgba(255,140,60,0.5)';c.lineWidth=1.5;c.stroke();c.textAlign='center';c.textBaseline='middle';c.fillStyle=isAH?'#66aaff':'#ffaa66';c.font='bold 10px "Courier New",monospace';c.fillText(cpp>=0.05?'AH'+cpp.toFixed(1):(cpp<=-0.05?'AS'+Math.abs(cpp).toFixed(1):'0'),boxX+26,boxY+14);}
-function drawCPP(){var c=cppCtx;c.clearRect(0,0,180,215);rR(c,2,2,176,211,8);var pgrd=c.createLinearGradient(0,0,0,215);pgrd.addColorStop(0,'rgba(85,115,78,0.97)');pgrd.addColorStop(1,'rgba(70,100,65,0.97)');c.fillStyle=pgrd;c.fill();c.strokeStyle='rgba(120,160,110,0.5)';c.lineWidth=1.5;c.stroke();drawCppColumn(c,ship.pCPP,'#ff6666','PORT',true);drawCppColumn(c,ship.sCPP,'#66ff88','STBD',false);}
-var cc=document.getElementById('comboCanvas'),cx2=cc.getContext('2d');
-function dCH(){var c=cx2;c.clearRect(0,0,260,235);c.save();c.translate(130,118);c.beginPath();c.arc(0,0,97,-28*D,-152*D,false);c.strokeStyle='#c8d4c0';c.lineWidth=28;c.lineCap='round';c.stroke();c.lineCap='butt';c.beginPath();c.arc(0,0,97,-28*D,-152*D,false);c.strokeStyle='#222';c.lineWidth=20;c.lineCap='round';c.stroke();c.lineCap='butt';c.beginPath();c.arc(0,0,85,-28*D,-152*D,false);c.strokeStyle='rgba(80,80,70,0.4)';c.lineWidth=1.5;c.stroke();var mArr=[-90,-60,-30,0,30,60,90];for(var mi=0;mi<mArr.length;mi++){var a=mArr[mi],rd=(a-90)*D,co=Math.cos(rd),si=Math.sin(rd);c.beginPath();c.moveTo(co*81,si*81);c.lineTo(co*108,si*108);c.strokeStyle='rgba(240,240,230,0.9)';c.lineWidth=2;c.stroke();c.fillStyle='#111';c.font='bold 12px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(Math.abs(a),co*70,si*70+4);}c.fillStyle='#111';c.font='bold 14px "Courier New",monospace';c.textAlign='center';c.fillText('P',-66,-64);c.fillText('S',66,-64);rR(c,-36,-33,72,64,7);c.fillStyle='rgba(32,32,26,0.95)';c.fill();c.strokeStyle='rgba(150,160,120,0.4)';c.lineWidth=1.2;c.stroke();c.strokeStyle='rgba(180,60,60,0.2)';c.lineWidth=8;c.lineCap='round';c.beginPath();c.moveTo(-16,-26);c.lineTo(-16,26);c.stroke();c.lineCap='butt';var py=-(ship.pt/90)*24;drawKnobHandle(c,-16,py,'rgb(220,60,60)',11);c.fillStyle='rgba(255,255,255,0.85)';c.font='bold 11px monospace';c.textAlign='center';c.textBaseline='middle';c.fillText('P',-16,py+1);c.strokeStyle='rgba(40,160,80,0.2)';c.lineWidth=8;c.lineCap='round';c.beginPath();c.moveTo(16,-26);c.lineTo(16,26);c.stroke();c.lineCap='butt';var sy=-(ship.sb/90)*24;drawKnobHandle(c,16,sy,'rgb(60,220,100)',11);c.fillStyle='rgba(255,255,255,0.85)';c.font='bold 11px monospace';c.textAlign='center';c.textBaseline='middle';c.fillText('S',16,sy+1);c.save();c.rotate(ship.st*D);c.beginPath();c.arc(0,0,97,-28*D,-152*D,false);c.strokeStyle='rgba(210,210,195,0.65)';c.lineWidth=10;c.lineCap='round';c.stroke();c.restore();var stV=Math.round(ship.st),stTxt=stV===0?'0\u00B0':(stV<0?'P '+Math.abs(stV)+'\u00B0':'S '+stV+'\u00B0'),stCol=stV===0?'#6688aa':(stV<0?'#dd4444':'#33bb66');rR(c,-46,97,92,22,5);c.fillStyle='rgba(0,0,0,0.78)';c.fill();c.strokeStyle='rgba(160,180,120,0.3)';c.lineWidth=0.8;c.stroke();c.fillStyle=stCol;c.font='bold 12px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(stTxt,0,108);c.restore();}
+function drawGauge(id,needleCol,thrustDeg){
+  var cv=document.getElementById(id),c=cv.getContext('2d');c.clearRect(0,0,170,175);var cx=85,cy=85,r=62;
+  c.beginPath();c.arc(cx,cy,r+12,0,Math.PI*2);var bg=c.createRadialGradient(cx-4,cy-4,r-4,cx,cy,r+12);
+  bg.addColorStop(0,'#b0b8b0');bg.addColorStop(0.5,'#888e88');bg.addColorStop(1,'#606860');c.fillStyle=bg;c.fill();c.strokeStyle='#444';c.lineWidth=1.5;c.stroke();
+  c.beginPath();c.arc(cx,cy,r+3,0,Math.PI*2);c.fillStyle='#2a2a2a';c.fill();
+  var fg=c.createRadialGradient(cx-10,cy-10,4,cx,cy,r+2);fg.addColorStop(0,'#eaeae2');fg.addColorStop(0.65,'#d8d8d0');fg.addColorStop(1,'#c8c8c0');
+  c.beginPath();c.arc(cx,cy,r+2,0,Math.PI*2);c.fillStyle=fg;c.fill();
+  for(var deg=0;deg<360;deg+=10){
+    var rad=(deg-90)*D,isMaj=(deg%30===0),oRr=r,iRr=isMaj?(r-14):(r-7);
+    c.beginPath();c.moveTo(cx+Math.cos(rad)*iRr,cy+Math.sin(rad)*iRr);c.lineTo(cx+Math.cos(rad)*oRr,cy+Math.sin(rad)*oRr);c.strokeStyle=isMaj?'rgba(0,0,0,0.75)':'rgba(0,0,0,0.22)';c.lineWidth=isMaj?1.6:0.7;c.stroke();
+    if(isMaj){var sv=(deg<=180)?(90-deg):(deg-270),lbl;if(sv>0)lbl='AH'+sv;else if(sv<0)lbl='AS'+Math.abs(sv);else lbl='0';c.fillStyle='#111';c.font='bold 9px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(lbl,cx+Math.cos(rad)*(r-24),cy+Math.sin(rad)*(r-24));}
+  }
+  c.fillStyle='#cc9900';c.beginPath();c.moveTo(cx,cy-r-3);c.lineTo(cx-5,cy-r+6);c.lineTo(cx+5,cy-r+6);c.closePath();c.fill();
+  var nRad=(thrustDeg-90)*D,nCos=Math.cos(nRad),nSin=Math.sin(nRad),tipLen=r-6,baseLen=16,halfW=9,pX=-nSin,pY=nCos;
+  var tipX=cx+nCos*tipLen,tipY=cy+nSin*tipLen,baseX=cx-nCos*baseLen,baseY=cy-nSin*baseLen;
+  c.save();c.beginPath();c.moveTo(tipX+2,tipY+2);c.lineTo(baseX+pX*halfW+2,baseY+pY*halfW+2);c.lineTo(baseX-pX*halfW+2,baseY-pY*halfW+2);c.closePath();c.fillStyle='rgba(0,0,0,0.2)';c.fill();c.restore();
+  c.beginPath();c.moveTo(tipX,tipY);c.lineTo(baseX+pX*halfW,baseY+pY*halfW);c.lineTo(baseX-pX*halfW,baseY-pY*halfW);c.closePath();c.fillStyle='#111';c.fill();c.strokeStyle='rgba(60,60,60,0.6)';c.lineWidth=0.8;c.stroke();
+  c.beginPath();c.moveTo(cx+nCos*tipLen*0.15,cy+nSin*tipLen*0.15);c.lineTo(cx+nCos*tipLen*0.85,cy+nSin*tipLen*0.85);c.strokeStyle='#ffffff';c.lineWidth=2;c.lineCap='round';c.stroke();
+  var ahLen=6,ahAng=0.45;c.beginPath();c.moveTo(cx+nCos*tipLen*0.85,cy+nSin*tipLen*0.85);c.lineTo(cx+nCos*tipLen*0.85-nCos*ahLen+pX*ahLen*ahAng,cy+nSin*tipLen*0.85-nSin*ahLen+pY*ahLen*ahAng);c.moveTo(cx+nCos*tipLen*0.85,cy+nSin*tipLen*0.85);c.lineTo(cx+nCos*tipLen*0.85-nCos*ahLen-pX*ahLen*ahAng,cy+nSin*tipLen*0.85-nSin*ahLen-pY*ahLen*ahAng);c.strokeStyle='#ffffff';c.lineWidth=1.8;c.stroke();c.lineCap='butt';
+  c.beginPath();c.arc(cx+nCos*tipLen*0.18,cy+nSin*tipLen*0.18,3.5,0,Math.PI*2);c.fillStyle='#00ccee';c.fill();c.strokeStyle='rgba(0,180,220,0.6)';c.lineWidth=1;c.stroke();
+  var ecX=cx-nCos*baseLen*0.5,ecY=cy-nSin*baseLen*0.5,es=halfW*0.55;c.beginPath();c.arc(ecX+pX*es,ecY+pY*es,3,0,Math.PI*2);c.fillStyle='#fff';c.fill();c.strokeStyle='rgba(100,100,100,0.4)';c.lineWidth=0.8;c.stroke();
+  c.beginPath();c.arc(ecX-pX*es,ecY-pY*es,3,0,Math.PI*2);c.fillStyle='#fff';c.fill();c.strokeStyle='rgba(100,100,100,0.4)';c.lineWidth=0.8;c.stroke();
+  c.beginPath();c.arc(cx,cy,7,0,Math.PI*2);var hg=c.createRadialGradient(cx-2,cy-2,1,cx,cy,7);hg.addColorStop(0,'#777');hg.addColorStop(1,'#222');c.fillStyle=hg;c.fill();c.strokeStyle='#888';c.lineWidth=1.5;c.stroke();c.beginPath();c.arc(cx,cy,3,0,Math.PI*2);c.fillStyle='#bbb';c.fill();
+}
 
-// ══════════════════════════════════════════════════════════
-//  MOUSE / TOUCH (unchanged)
-// ══════════════════════════════════════════════════════════
+var compCv=document.getElementById('compassCanvas'),compCtx=compCv.getContext('2d');
+function drawCompass(){
+  var c=compCtx,W=170,H=175,cx=85,cy=87.5,R=73;c.clearRect(0,0,W,H);
+  c.beginPath();c.arc(cx,cy,R+6,0,Math.PI*2);c.fillStyle='rgba(0,0,0,0.45)';c.fill();
+  c.beginPath();c.arc(cx,cy,R+4,0,Math.PI*2);var bz=c.createRadialGradient(cx-4,cy-4,R-10,cx,cy,R+4);bz.addColorStop(0,'#b8c0b8');bz.addColorStop(0.5,'#808880');bz.addColorStop(1,'#505850');c.fillStyle=bz;c.fill();c.strokeStyle='#333';c.lineWidth=2;c.stroke();
+  c.beginPath();c.arc(cx,cy,R,0,Math.PI*2);c.fillStyle='#12120f';c.fill();
+  var hdgDeg=((ship.hd*R2D)+360)%360;c.save();c.translate(cx,cy);c.rotate(-hdgDeg*D);
+  for(var deg=0;deg<360;deg+=5){var rad=deg*D,isMaj=(deg%30===0),isMid=(deg%10===0),oR=R-2,iR=isMaj?(R-20):(isMid?(R-13):(R-8));c.beginPath();c.moveTo(Math.sin(rad)*iR,-Math.cos(rad)*iR);c.lineTo(Math.sin(rad)*oR,-Math.cos(rad)*oR);c.strokeStyle=isMaj?'rgba(255,255,230,0.95)':(isMid?'rgba(200,200,180,0.6)':'rgba(160,160,140,0.3)');c.lineWidth=isMaj?2.2:(isMid?1.2:0.6);c.stroke();}
+  [{a:0,l:'N',c:'#ff3333'},{a:90,l:'E',c:'#e0e0cc'},{a:180,l:'S',c:'#e0e0cc'},{a:270,l:'W',c:'#e0e0cc'}].forEach(function(cd){c.fillStyle=cd.c;c.font='bold 16px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(cd.l,Math.sin(cd.a*D)*(R-34),-Math.cos(cd.a*D)*(R-34));});
+  [30,60,120,150,210,240,300,330].forEach(function(deg){c.fillStyle='rgba(200,200,180,0.7)';c.font='bold 11px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(deg,Math.sin(deg*D)*(R-34),-Math.cos(deg*D)*(R-34));});
+  c.restore();
+  c.fillStyle='#edc740';c.beginPath();c.moveTo(cx,cy-R+1);c.lineTo(cx-6,cy-R+12);c.lineTo(cx+6,cy-R+12);c.closePath();c.fill();c.strokeStyle='rgba(200,160,0,0.6)';c.lineWidth=1;c.stroke();
+  c.fillStyle='#edc740';c.beginPath();c.moveTo(cx,cy-14);c.lineTo(cx-6,cy+6);c.lineTo(cx,cy+2);c.lineTo(cx+6,cy+6);c.closePath();c.fill();c.beginPath();c.arc(cx,cy,3,0,Math.PI*2);c.fillStyle='#fff';c.fill();
+  rR(c,cx-36,cy+R-18,72,22,5);c.fillStyle='rgba(0,0,0,0.88)';c.fill();c.strokeStyle='rgba(237,199,64,0.5)';c.lineWidth=1;c.stroke();c.fillStyle='#edc740';c.font='bold 16px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(('000'+Math.round(hdgDeg)).slice(-3)+'\u00B0',cx,cy+R-7);
+}
+
+function drawKnobHandle(c,cx,cy,col,size){
+  size=size||14;var glow=c.createRadialGradient(cx,cy,size*0.3,cx,cy,size*1.8);glow.addColorStop(0,col.replace(')',',0.35)').replace('rgb','rgba'));glow.addColorStop(1,'rgba(0,0,0,0)');
+  c.beginPath();c.arc(cx,cy,size*1.8,0,Math.PI*2);c.fillStyle=glow;c.fill();
+  var body=c.createRadialGradient(cx-size*0.25,cy-size*0.25,size*0.05,cx,cy,size);body.addColorStop(0,'#555');body.addColorStop(0.35,'#181818');body.addColorStop(1,'#050505');
+  c.beginPath();c.arc(cx,cy,size,0,Math.PI*2);c.fillStyle=body;c.fill();c.strokeStyle='rgba(80,90,80,0.6)';c.lineWidth=1;c.stroke();
+  var ctr=c.createRadialGradient(cx-size*0.2,cy-size*0.25,size*0.05,cx-size*0.1,cy-size*0.1,size*0.55);ctr.addColorStop(0,'rgba(255,255,255,0.9)');ctr.addColorStop(0.4,col.replace(')',',0.7)').replace('rgb','rgba'));ctr.addColorStop(1,'rgba(0,0,0,0)');
+  c.beginPath();c.arc(cx-size*0.1,cy-size*0.1,size*0.55,0,Math.PI*2);c.fillStyle=ctr;c.fill();
+}
+
+var govCv=document.getElementById('govCanvas'),govCtx=govCv.getContext('2d');
+function drawGovColumn(c,gov,col,label,leftX){
+  var tX=leftX+40,tT=22,tB=155,trkH=tB-tT;
+  c.fillStyle=col;c.font='bold 10px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(label,leftX+52,11);
+  rR(c,tX-5,tT,10,trkH,5);var trkG=c.createLinearGradient(tX-5,0,tX+5,0);trkG.addColorStop(0,'rgba(50,50,45,0.9)');trkG.addColorStop(0.5,'rgba(70,75,65,0.7)');trkG.addColorStop(1,'rgba(40,40,35,0.9)');c.fillStyle=trkG;c.fill();c.strokeStyle='rgba(80,100,80,0.5)';c.lineWidth=1;c.stroke();
+  for(var i=0;i<=10;i++){var yy=tB-(i/10)*trkH,isMaj=(i%2===0||i===1);c.beginPath();c.moveTo(tX-12,yy);c.lineTo(tX-6,yy);c.strokeStyle=isMaj?'rgba(220,230,210,0.7)':'rgba(200,210,190,0.35)';c.lineWidth=isMaj?1.5:0.8;c.stroke();c.fillStyle='#e8f0e0';c.font='bold 12px "Courier New",monospace';c.textAlign='right';c.textBaseline='middle';c.fillText(''+i,tX-14,yy);}
+  var yC=tB-(1/10)*trkH;c.beginPath();c.moveTo(tX-16,yC);c.lineTo(tX+5,yC);c.strokeStyle='rgba(220,60,60,0.65)';c.lineWidth=1.2;c.setLineDash([3,2]);c.stroke();c.setLineDash([]);
+  c.fillStyle='rgba(220,70,70,0.8)';c.font='bold 7px monospace';c.textAlign='left';c.textBaseline='middle';c.fillText('CLT',tX+7,yC);
+  var hY=tB-(gov/10)*trkH;drawKnobHandle(c,tX,hY,gov<=0?'rgb(160,60,60)':'rgb(200,160,40)',12);
+  var boxX=tX+20,boxY=Math.max(5,Math.min(215-36-5,hY-18));rR(c,boxX,boxY,56,36,5);c.fillStyle='rgba(0,0,0,0.92)';c.fill();c.strokeStyle=govOn(gov)?'rgba(0,220,100,0.6)':'rgba(220,60,60,0.55)';c.lineWidth=1.5;c.stroke();
+  c.textAlign='center';c.textBaseline='middle';if(govOn(gov)){c.fillStyle='#00ee88';c.font='bold 15px "Courier New",monospace';c.fillText(govRpm(gov),boxX+28,boxY+12);c.fillStyle='rgba(0,180,100,0.7)';c.font='bold 7px monospace';c.fillText('RPM',boxX+28,boxY+26);}else{c.fillStyle='#ee4444';c.font='bold 9px "Courier New",monospace';c.fillText('CLUTCH',boxX+28,boxY+12);c.fillText('OFF',boxX+28,boxY+26);}
+}
+function drawGov(){
+  var c=govCtx;c.clearRect(0,0,220,215);rR(c,2,2,216,211,8);var pgrd=c.createLinearGradient(0,0,0,215);pgrd.addColorStop(0,'rgba(85,115,78,0.97)');pgrd.addColorStop(1,'rgba(70,100,65,0.97)');c.fillStyle=pgrd;c.fill();c.strokeStyle='rgba(120,160,110,0.5)';c.lineWidth=1.5;c.stroke();
+  c.beginPath();c.moveTo(110,8);c.lineTo(110,207);c.strokeStyle='rgba(100,140,90,0.3)';c.lineWidth=1;c.stroke();
+  drawGovColumn(c,ship.pGov,'#ff6666','PORT',0);drawGovColumn(c,ship.sGov,'#66ff88','STBD',106);
+}
+
+var cppCv=document.getElementById('cppCanvas'),cppCtx=cppCv.getContext('2d');
+function drawCppColumn(c,cpp,col,label,leftX){
+  var tX=leftX+30,tT=24,tB=170,trkH=tB-tT;
+  c.fillStyle=col;c.font='bold 10px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(label,leftX+42,11);
+  rR(c,tX-5,tT,10,trkH,5);var trkG=c.createLinearGradient(tX-5,0,tX+5,0);trkG.addColorStop(0,'rgba(50,50,45,0.9)');trkG.addColorStop(0.5,'rgba(70,75,65,0.7)');trkG.addColorStop(1,'rgba(40,40,35,0.9)');c.fillStyle=trkG;c.fill();c.strokeStyle='rgba(80,100,80,0.5)';c.lineWidth=1;c.stroke();
+  var zeroY=tT+(27/49)*trkH;
+  [{v:27,l:'AH27'},{v:20,l:'20'},{v:10,l:'10'},{v:0,l:'0'},{v:-10,l:'10'},{v:-22,l:'AS22'}].forEach(function(m){
+    var yy=tT+((27-m.v)/49)*trkH,isMaj=m.v===27||m.v===0||m.v===-22;
+    c.beginPath();c.moveTo(tX-12,yy);c.lineTo(tX-5,yy);c.strokeStyle=isMaj?'rgba(220,230,210,0.7)':'rgba(200,210,190,0.4)';c.lineWidth=isMaj?1.5:0.8;c.stroke();
+    c.fillStyle=m.v>0?'#88bbff':(m.v<0?'#ffaa77':'#e8f0e0');c.font=isMaj?'bold 10px "Courier New",monospace':'bold 9px "Courier New",monospace';c.textAlign='right';c.textBaseline='middle';c.fillText(m.l,tX-14,yy);
+  });
+  for(var mv=-20;mv<=25;mv+=5){if(mv===27||mv===20||mv===10||mv===0||mv===-10||mv===-22)continue;var myy=tT+((27-mv)/49)*trkH;c.beginPath();c.moveTo(tX-9,myy);c.lineTo(tX-5,myy);c.strokeStyle='rgba(0,0,0,0.2)';c.lineWidth=0.6;c.stroke();}
+  c.beginPath();c.moveTo(tX-16,zeroY);c.lineTo(tX+16,zeroY);c.strokeStyle='rgba(0,160,80,0.6)';c.lineWidth=1.5;c.setLineDash([4,2]);c.stroke();c.setLineDash([]);
+  var hY=Math.max(tT,Math.min(tB,tT+((27-cpp)/49)*trkH)),isAH=cpp>=0;
+  drawKnobHandle(c,tX,hY,isAH?'rgb(60,120,200)':'rgb(200,100,60)',12);
+  var boxX=tX+20,boxY=Math.max(5,Math.min(215-28-5,hY-14));
+  rR(c,boxX,boxY,52,28,5);c.fillStyle='rgba(0,0,0,0.92)';c.fill();c.strokeStyle=isAH?'rgba(60,150,255,0.5)':'rgba(255,140,60,0.5)';c.lineWidth=1.5;c.stroke();
+  c.textAlign='center';c.textBaseline='middle';c.fillStyle=isAH?'#66aaff':'#ffaa66';c.font='bold 10px "Courier New",monospace';c.fillText(cpp>=0.05?'AH'+(cpp.toFixed(1)):(cpp<=-0.05?'AS'+(Math.abs(cpp).toFixed(1)):'0'),boxX+26,boxY+14);
+}
+function drawCPP(){
+  var c=cppCtx;c.clearRect(0,0,180,215);rR(c,2,2,176,211,8);var pgrd=c.createLinearGradient(0,0,0,215);pgrd.addColorStop(0,'rgba(85,115,78,0.97)');pgrd.addColorStop(1,'rgba(70,100,65,0.97)');c.fillStyle=pgrd;c.fill();c.strokeStyle='rgba(120,160,110,0.5)';c.lineWidth=1.5;c.stroke();
+  c.beginPath();c.moveTo(90,8);c.lineTo(90,207);c.strokeStyle='rgba(100,140,90,0.3)';c.lineWidth=1;c.stroke();
+  drawCppColumn(c,ship.pCPP,'#ff6666','PORT',0);drawCppColumn(c,ship.sCPP,'#66ff88','STBD',88);
+}
+
+var cc=document.getElementById('comboCanvas'),cx2=cc.getContext('2d');
+function dCH(){
+  var c=cx2;c.clearRect(0,0,260,235);c.save();c.translate(130,118);
+  c.beginPath();c.arc(0,0,97,-28*D,-152*D,false);c.strokeStyle='#c8d4c0';c.lineWidth=28;c.lineCap='round';c.stroke();c.lineCap='butt';
+  c.beginPath();c.arc(0,0,97,-28*D,-152*D,false);c.strokeStyle='#222';c.lineWidth=20;c.lineCap='round';c.stroke();c.lineCap='butt';
+  c.beginPath();c.arc(0,0,85,-28*D,-152*D,false);c.strokeStyle='rgba(80,80,70,0.4)';c.lineWidth=1.5;c.stroke();
+  var mArr=[-90,-60,-30,0,30,60,90];
+  for(var mi=0;mi<mArr.length;mi++){var a=mArr[mi],rd=(a-90)*D,co=Math.cos(rd),si=Math.sin(rd);c.beginPath();c.moveTo(co*81,si*81);c.lineTo(co*108,si*108);c.strokeStyle='rgba(240,240,230,0.9)';c.lineWidth=2;c.stroke();c.fillStyle='#111';c.font='bold 12px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(Math.abs(a),co*70,si*70+4);}
+  for(var mi2=-90;mi2<=90;mi2+=10){if(mi2%30===0)continue;var mrd=(mi2-90)*D;c.beginPath();c.moveTo(Math.cos(mrd)*87,Math.sin(mrd)*87);c.lineTo(Math.cos(mrd)*107,Math.sin(mrd)*107);c.strokeStyle='rgba(220,220,200,0.4)';c.lineWidth=0.8;c.stroke();}
+  c.fillStyle='#111';c.font='bold 14px "Courier New",monospace';c.textAlign='center';c.fillText('P',-66,-64);c.fillText('S',66,-64);
+  c.fillStyle='#cc9900';c.beginPath();c.moveTo(0,-114);c.lineTo(-5,-106);c.lineTo(5,-106);c.closePath();c.fill();
+  rR(c,-36,-33,72,64,7);c.fillStyle='rgba(32,32,26,0.95)';c.fill();c.strokeStyle='rgba(150,160,120,0.4)';c.lineWidth=1.2;c.stroke();
+  c.font='bold 8px "Courier New",monospace';c.textAlign='center';c.fillStyle='#4488cc';c.fillText('AH90',0,-25);c.fillStyle='rgba(80,120,180,0.6)';c.font='6px monospace';c.fillText('60',0,-16);
+  c.setLineDash([3,2]);c.strokeStyle='rgba(200,200,170,0.4)';c.lineWidth=0.6;c.beginPath();c.moveTo(-30,0);c.lineTo(30,0);c.stroke();c.setLineDash([]);
+  c.fillStyle='#111';c.font='bold 12px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText('0',0,4);c.fillStyle='rgba(180,120,60,0.6)';c.font='6px monospace';c.fillText('60',0,17);c.fillStyle='#cc7744';c.font='bold 8px "Courier New",monospace';c.fillText('AS90',0,27);
+  c.strokeStyle='rgba(180,60,60,0.2)';c.lineWidth=8;c.lineCap='round';c.beginPath();c.moveTo(-16,-26);c.lineTo(-16,26);c.stroke();c.lineCap='butt';
+  var py=-(ship.pt/90)*24;rR(c,-26,py-9,19,18,4);c.fillStyle='rgba(0,0,0,0.3)';c.fill();rR(c,-25,py-8,18,16,4);c.fillStyle='#b03030';c.fill();rR(c,-23,py-5,14,10,3);c.fillStyle='#dd4444';c.fill();
+  var kgP=c.createRadialGradient(-18,py-21,1,-16,py-18,8);kgP.addColorStop(0,'rgba(255,255,255,0.85)');kgP.addColorStop(0.3,'rgba(200,100,100,0.7)');kgP.addColorStop(1,'rgba(0,0,0,0)');
+  c.beginPath();c.arc(-16,py-18,8,0,Math.PI*2);c.fillStyle='#111';c.fill();c.strokeStyle='rgba(100,100,100,0.4)';c.lineWidth=1;c.stroke();c.beginPath();c.arc(-16,py-18,8,0,Math.PI*2);c.fillStyle=kgP;c.fill();c.fillStyle='#111';c.font='bold 10px "Courier New",monospace';c.textAlign='center';c.fillText('P',-16,-31);
+  c.strokeStyle='rgba(40,160,80,0.2)';c.lineWidth=8;c.lineCap='round';c.beginPath();c.moveTo(16,-26);c.lineTo(16,26);c.stroke();c.lineCap='butt';
+  var sy=-(ship.sb/90)*24;rR(c,7,sy-9,19,18,4);c.fillStyle='rgba(0,0,0,0.3)';c.fill();rR(c,7,sy-8,18,16,4);c.fillStyle='#228840';c.fill();rR(c,9,sy-5,14,10,3);c.fillStyle='#33bb55';c.fill();
+  var kgS=c.createRadialGradient(14,sy-21,1,16,sy-18,8);kgS.addColorStop(0,'rgba(255,255,255,0.85)');kgS.addColorStop(0.3,'rgba(80,200,80,0.7)');kgS.addColorStop(1,'rgba(0,0,0,0)');
+  c.beginPath();c.arc(16,sy-18,8,0,Math.PI*2);c.fillStyle='#111';c.fill();c.strokeStyle='rgba(100,100,100,0.4)';c.lineWidth=1;c.stroke();c.beginPath();c.arc(16,sy-18,8,0,Math.PI*2);c.fillStyle=kgS;c.fill();c.fillStyle='#111';c.font='bold 10px "Courier New",monospace';c.textAlign='center';c.fillText('S',16,-31);
+  c.beginPath();c.arc(0,0,9,0,Math.PI*2);var hg=c.createRadialGradient(-2,-2,1,0,0,9);hg.addColorStop(0,'#666');hg.addColorStop(1,'#222');c.fillStyle=hg;c.fill();c.strokeStyle='#777';c.lineWidth=1.5;c.stroke();c.beginPath();c.arc(0,0,4,0,Math.PI*2);c.fillStyle='#aaa';c.fill();
+  c.save();c.rotate(ship.st*D);c.beginPath();c.arc(0,0,97,-28*D,-152*D,false);c.strokeStyle='rgba(210,210,195,0.65)';c.lineWidth=10;c.lineCap='round';c.stroke();c.beginPath();c.arc(0,0,97,-28*D,-152*D,false);c.strokeStyle='rgba(255,255,245,0.2)';c.lineWidth=5;c.stroke();c.lineCap='butt';c.restore();
+  var stRad=(ship.st-90)*D,arR=116,ax=Math.cos(stRad)*arR,ay=Math.sin(stRad)*arR,inR2=stRad+Math.PI,pr2=stRad+Math.PI/2;
+  c.fillStyle='#ddbb00';c.beginPath();c.moveTo(ax+Math.cos(inR2)*18,ay+Math.sin(inR2)*18);c.lineTo(ax+Math.cos(pr2)*8,ay+Math.sin(pr2)*8);c.lineTo(ax-Math.cos(pr2)*8,ay-Math.sin(pr2)*8);c.closePath();c.fill();c.strokeStyle='rgba(160,120,0,0.5)';c.lineWidth=0.8;c.stroke();
+  var stV=Math.round(ship.st),stTxt=stV===0?'0\u00B0':(stV<0?'P '+Math.abs(stV)+'\u00B0':'S '+stV+'\u00B0'),stCol=stV===0?'#6688aa':(stV<0?'#dd4444':'#33bb66');
+  rR(c,-46,97,92,22,5);c.fillStyle='rgba(0,0,0,0.78)';c.fill();c.strokeStyle='rgba(160,180,120,0.3)';c.lineWidth=0.8;c.stroke();c.fillStyle=stCol;c.font='bold 12px "Courier New",monospace';c.textAlign='center';c.textBaseline='middle';c.fillText(stTxt,0,108);
+  c.restore();
+}
+// =========================================================================
+// [4. 터치 및 마우스 입력 처리 (Touch & Mouse Input Control)]
+// 모바일 터치나 마우스 드래그로 조종간을 조작하는 이벤트 리스너들입니다.
+// =========================================================================
 var mouseDrag=null,wSA=0,wSS=0,touches={};
-function hitCombo(cX,cY){var r=cc.getBoundingClientRect(),mx=(cX-r.left)/r.width*260-130,my=(cY-r.top)/r.height*235-118;if(mx>-28&&mx<0&&my>-33&&my<33)return'pt';if(mx>=0&&mx<28&&my>-33&&my<33)return'sb';return'wh';}
+
+// [수정됨] 화면 상의 좌표를 받아 어느 레버를 만졌는지 판정합니다.
+function hitCombo(cX,cY){
+  var r=cc.getBoundingClientRect();
+  var mx=(cX-r.left)/r.width*260-130, my=(cY-r.top)/r.height*235-118;
+  
+  // 1. 중앙 개별 레버(Port / Stbd) 터치 인식
+  if(mx>-28&&mx<0&&my>-33&&my<33) return 'pt';
+  if(mx>=0&&mx<28&&my>-33&&my<33) return 'sb';
+  
+  // 2. [추가된 로직] 중심점으로부터의 거리를 계산 (피타고라스 정리)
+  var dist = Math.sqrt(mx*mx + my*my);
+  
+  // 거리가 65 이상, 120 이하인 바깥쪽 둥근 테두리를 잡았을 때만 메인 휠(wh)로 인식!
+  if(dist > 65 && dist < 120) return 'wh';
+  
+  // 빈 공간을 누르면 아무것도 안 함
+  return null; 
+}
+
 cc.addEventListener('mousedown',function(e){var m=hitCombo(e.clientX,e.clientY);mouseDrag=m;if(m==='wh'){var r=cc.getBoundingClientRect();wSA=Math.atan2((e.clientX-r.left)/r.width*260-130,-((e.clientY-r.top)/r.height*235-118))*R2D;wSS=ship.st;}});
 cc.addEventListener('touchstart',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],m=hitCombo(t.clientX,t.clientY),info={mode:m};if(m==='wh'){var r=cc.getBoundingClientRect();info.wSA=Math.atan2((t.clientX-r.left)/r.width*260-130,-((t.clientY-r.top)/r.height*235-118))*R2D;info.wSS=ship.st;}touches[t.identifier]=info;}},{passive:false});
-function doStXY(cX,cY){var r=cc.getBoundingClientRect();ship.st=Math.max(-90,Math.min(90,wSS+(Math.atan2((cX-r.left)/r.width*260-130,-((cY-r.top)/r.height*235-118))*R2D-wSA)));}
-function doStXYT(cX,cY,info){var r=cc.getBoundingClientRect();ship.st=Math.max(-90,Math.min(90,info.wSS+(Math.atan2((cX-r.left)/r.width*260-130,-((cY-r.top)/r.height*235-118))*R2D-info.wSA)));}
+
+// [수정됨] 마우스/터치로 휠을 드래그할 때 묵직하게 돌아가도록 무게감을 추가했습니다.
+function doStXY(cX,cY){
+  var r=cc.getBoundingClientRect();
+  var currentAngle = Math.atan2((cX-r.left)/r.width*260-130,-((cY-r.top)/r.height*235-118))*R2D;
+  var deltaAngle = currentAngle - wSA;
+  
+  // [조작감 튜닝 가이드] 
+  // SENSITIVITY(민감도)를 0.5로 설정하여 손을 움직인 거리의 50%만 휠이 따라가게 합니다.
+  // 더 뻑뻑하게 하려면 0.3, 원래대로 가볍게 하려면 1.0으로 수정하세요.
+  var SENSITIVITY = 0.5; 
+  ship.st=Math.max(-90,Math.min(90,wSS+(deltaAngle * SENSITIVITY)));
+}
+
+function doStXYT(cX,cY,info){
+  var r=cc.getBoundingClientRect();
+  var currentAngle = Math.atan2((cX-r.left)/r.width*260-130,-((cY-r.top)/r.height*235-118))*R2D;
+  var deltaAngle = currentAngle - info.wSA;
+  
+  var SENSITIVITY = 0.5; // 터치 시 무게감 계수
+  ship.st=Math.max(-90,Math.min(90,info.wSS+(deltaAngle * SENSITIVITY)));
+}
+
 function doThY(cY,mode){var r=cc.getBoundingClientRect();var v=Math.max(-90,Math.min(90,((118-(cY-r.top)/r.height*235)/58)*90));if(mode==='pt')ship.pt=v;else ship.sb=v;}
+
+// --- 아래는 기존에 정상 작동하던 거버너, CPP, 전역 마우스 이벤트 (그대로 유지) ---
 function isPortGov(cX){var r=govCv.getBoundingClientRect();return(cX-r.left)/r.width<0.5;}
 govCv.addEventListener('mousedown',function(e){mouseDrag=isPortGov(e.clientX)?'gvP':'gvS';doGovY(e.clientY,mouseDrag==='gvP');});
 govCv.addEventListener('touchstart',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],ip=isPortGov(t.clientX);touches[t.identifier]={mode:ip?'gvP':'gvS'};doGovY(t.clientY,ip);}},{passive:false});
 function doGovY(cY,isPort){var r=govCv.getBoundingClientRect();var v=(1-((cY-r.top)/r.height*215-22)/(155-22))*10;v=Math.max(0,Math.min(10,v));if(v<0.08)v=0;if(isPort)ship.pGov=v;else ship.sGov=v;}
+
 function isPortCPP(cX){var r=cppCv.getBoundingClientRect();return(cX-r.left)/r.width<0.5;}
 cppCv.addEventListener('mousedown',function(e){mouseDrag=isPortCPP(e.clientX)?'cpP':'cpS';doCppY(e.clientY,mouseDrag==='cpP');});
 cppCv.addEventListener('touchstart',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],ip=isPortCPP(t.clientX);touches[t.identifier]={mode:ip?'cpP':'cpS'};doCppY(t.clientY,ip);}},{passive:false});
 function doCppY(cY,isPort){var r=cppCv.getBoundingClientRect();var v=27-(((cY-r.top)/r.height*215-24)/(170-24))*49;v=Math.max(-22,Math.min(27,v));if(isPort)ship.pCPP=v;else ship.sCPP=v;}
+
 window.addEventListener('mousemove',function(e){if(!mouseDrag)return;if(mouseDrag==='wh')doStXY(e.clientX,e.clientY);else if(mouseDrag==='pt'||mouseDrag==='sb')doThY(e.clientY,mouseDrag);else if(mouseDrag==='gvP')doGovY(e.clientY,true);else if(mouseDrag==='gvS')doGovY(e.clientY,false);else if(mouseDrag==='cpP')doCppY(e.clientY,true);else if(mouseDrag==='cpS')doCppY(e.clientY,false);});
 window.addEventListener('mouseup',function(){mouseDrag=null;});
 window.addEventListener('touchmove',function(e){var ha=false;for(var k in touches)ha=true;if(!ha)return;e.preventDefault();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],info=touches[t.identifier];if(!info)continue;if(info.mode==='wh')doStXYT(t.clientX,t.clientY,info);else if(info.mode==='pt'||info.mode==='sb')doThY(t.clientY,info.mode);else if(info.mode==='gvP')doGovY(t.clientY,true);else if(info.mode==='gvS')doGovY(t.clientY,false);else if(info.mode==='cpP')doCppY(t.clientY,true);else if(info.mode==='cpS')doCppY(t.clientY,false);}},{passive:false});
 window.addEventListener('touchend',function(e){for(var i=0;i<e.changedTouches.length;i++)delete touches[e.changedTouches[i].identifier];});
-function pI(){if(pk['a']||pk['A'])ship.st=Math.max(-90,ship.st-0.6);if(pk['d']||pk['D'])ship.st=Math.min(90,ship.st+0.6);if(pk['w']||pk['W'])ship.pt=Math.min(90,ship.pt+1.2);if(pk['s']||pk['S'])ship.pt=Math.max(-90,ship.pt-1.2);if(pk['ArrowUp'])ship.sb=Math.min(90,ship.sb+1.2);if(pk['ArrowDown'])ship.sb=Math.max(-90,ship.sb-1.2);if(pk['q']||pk['Q'])ship.pGov=Math.min(10,ship.pGov+0.1);if(pk['e']||pk['E'])ship.pGov=Math.max(0,ship.pGov-0.1);if(pk['z']||pk['Z'])ship.sGov=Math.min(10,ship.sGov+0.1);if(pk['x']||pk['X'])ship.sGov=Math.max(0,ship.sGov-0.1);if(pk['i']||pk['I'])ship.pCPP=Math.min(27,ship.pCPP+0.3);if(pk['k']||pk['K'])ship.pCPP=Math.max(-22,ship.pCPP-0.3);if(pk['o']||pk['O'])ship.sCPP=Math.min(27,ship.sCPP+0.3);if(pk['l']||pk['L'])ship.sCPP=Math.max(-22,ship.sCPP-0.3);if(pk[' ']){ship.pt=0.88;ship.sb=0.88;ship.pGov=Math.max(0,ship.pGov-0.25);ship.sGov=Math.max(0,ship.sGov-0.25);ship.pCPP*=0.88;ship.sCPP*=0.88;}}
+
+function pI(){
+  if(pk['a']||pk['A'])ship.st=Math.max(-90,ship.st-0.6);if(pk['d']||pk['D'])ship.st=Math.min(90,ship.st+0.6);
+  if(pk['w']||pk['W'])ship.pt=Math.min(90,ship.pt+1.2);if(pk['s']||pk['S'])ship.pt=Math.max(-90,ship.pt-1.2);
+  if(pk['ArrowUp'])ship.sb=Math.min(90,ship.sb+1.2);if(pk['ArrowDown'])ship.sb=Math.max(-90,ship.sb-1.2);
+  if(pk['q']||pk['Q'])ship.pGov=Math.min(10,ship.pGov+0.1);if(pk['e']||pk['E'])ship.pGov=Math.max(0,ship.pGov-0.1);
+  if(pk['z']||pk['Z'])ship.sGov=Math.min(10,ship.sGov+0.1);if(pk['x']||pk['X'])ship.sGov=Math.max(0,ship.sGov-0.1);
+  if(pk['i']||pk['I'])ship.pCPP=Math.min(27,ship.pCPP+0.3);if(pk['k']||pk['K'])ship.pCPP=Math.max(-22,ship.pCPP-0.3);
+  if(pk['o']||pk['O'])ship.sCPP=Math.min(27,ship.sCPP+0.3);if(pk['l']||pk['L'])ship.sCPP=Math.max(-22,ship.sCPP-0.3);
+  if(pk[' ']){ship.pt*=0.88;ship.sb*=0.88;ship.pGov=Math.max(0,ship.pGov-0.25);ship.sGov=Math.max(0,ship.sGov-0.25);ship.pCPP*=0.88;ship.sCPP*=0.88;}
+}
 
 // ══════════════════════════════════════════════════════════
-//  THREE.JS SCENE
+//  2. THREE.JS — BRIDGE 3D VIEW & PHYSICS
 // ══════════════════════════════════════════════════════════
 var bwEl=document.getElementById('bridgewrap'),bCanvas=document.getElementById('bridgeCanvas');
-var renderer=new THREE.WebGLRenderer({canvas:bCanvas,antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-var scene=new THREE.Scene(); scene.background=new THREE.Color(0x004488);
+var renderer=new THREE.WebGLRenderer({canvas:bCanvas,antialias:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+var scene=new THREE.Scene();
+
+// 맑은 청색 바다 세팅
+scene.background=new THREE.Color(0x004488);
 var camera=new THREE.PerspectiveCamera(60,1,0.1,8000);
-scene.add(new THREE.AmbientLight(0xffffff,1.2));
-var sunL=new THREE.DirectionalLight(0xfff5e0,1.2); sunL.position.set(200,600,150); scene.add(sunL);
-var fillL=new THREE.DirectionalLight(0xaaccff,0.4); fillL.position.set(-100,200,-200); scene.add(fillL);
 
-// Ocean
-var OCEAN_W=8000, OCEAN_SEGS=64;
-var oceanGeo=new THREE.PlaneGeometry(OCEAN_W,OCEAN_W,OCEAN_SEGS,OCEAN_SEGS); oceanGeo.rotateX(-Math.PI/2);
-var oceanOrigY=new Float32Array(oceanGeo.attributes.position.count);
-for(var oi=0;oi<oceanGeo.attributes.position.count;oi++) oceanOrigY[oi]=oceanGeo.attributes.position.getY(oi);
-var ocean=new THREE.Mesh(oceanGeo,new THREE.MeshBasicMaterial({color:0x003d7a})); scene.add(ocean);
+scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+var sun=new THREE.DirectionalLight(0xffffff, 0.5); sun.position.set(100, 500, 100); scene.add(sun);
 
-// ── Dock helpers ──
-function addBox(g,x,y,z,w,h,d,col){
-  var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:col}));
-  m.position.set(x,y,z); if(g)g.add(m); else scene.add(m); return m;
-}
-var fenderGeo = new THREE.CylinderGeometry(0.8,0.8,5,16);
-var fenderMat = new THREE.MeshLambertMaterial({color:0x151515});
-var bollardGeo = new THREE.CylinderGeometry(0.5,0.5,1.5,12);
-var bollardMat = new THREE.MeshLambertMaterial({color:0xddaa00});
-function makePierRow(group, xArr, y, z, fenderFaceZ) {
-  xArr.forEach(function(fx){
-    var fe=new THREE.Mesh(fenderGeo,fenderMat);
-    fe.position.set(fx,y,fenderFaceZ); group.add(fe);
-    var bo=new THREE.Mesh(bollardGeo,bollardMat);
-    bo.position.set(fx,y+3,z); group.add(bo);
+var OCEAN_W=8000,OCEAN_SEGS=64;var oceanGeo=new THREE.PlaneGeometry(OCEAN_W,OCEAN_W,OCEAN_SEGS,OCEAN_SEGS);oceanGeo.rotateX(-Math.PI/2);
+var oceanOrigY=new Float32Array(oceanGeo.attributes.position.count);for(var oi=0;oi<oceanGeo.attributes.position.count;oi++)oceanOrigY[oi]=oceanGeo.attributes.position.getY(oi);
+
+// 빛 반사가 아예 없는 순수 맑은 청색 바다 구현
+var oceanMat=new THREE.MeshBasicMaterial({color:0x003d7a});
+var ocean=new THREE.Mesh(oceanGeo,oceanMat); scene.add(ocean);
+
+function addBox(g,x,y,z,w,h,d,col){var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:col}));m.position.set(x,y,z);g.add(m);return m;}
+// ★ 출발 부두: 선박 우현(Starboard, +Z방향) 접안
+//   부두 면(z=+12) + 부두펜더 0.5m 돌출 → 부두펜더 외측 z=+11.5
+//   본선 펜더 0.5m 돌출 → 본선펜더 외측 = ship.y+8.5 = 3.0+8.5 = 11.5  ← 정확히 접촉
+var dockGroup=new THREE.Group();scene.add(dockGroup);
+addBox(dockGroup, 270, 2.5, +28, 500, 5, 20, 0xd4c4a0); // 부두 본체
+addBox(dockGroup, 270, 3.5, +14, 500, 7,  4, 0x999888); // 접안 에지 (내면 z=+12)
+// 부두 펜더 (0.5m 돌출, 내면z=12 → 중심z=11.75, 폭0.5m)
+(function(){
+  var mDF=new THREE.MeshLambertMaterial({color:0x222222});
+  [-100,-60,-20,20,60,100,140,180,220,260,300,340,380,420,460].forEach(function(fx){
+    var df=new THREE.Mesh(new THREE.BoxGeometry(1.5,2.0,0.5),mDF);
+    df.position.set(270+fx-200, 4.5, 11.75); dockGroup.add(df);
   });
-}
-
-// ══════════════════════════════════════════════════════════
-//  ★ 1. 출발 부두 (Start Berth Dock) – 좌현(Port) 접안
-//    선체: x=-400, y=0, hd=π/2 (동향)
-//    좌현면 world-Z = -8  →  부두 내측면 z = -9
-//    부두 본체: z = -9 ~ -34 (25m폭), x = -560 ~ -240 (320m장)
-// ══════════════════════════════════════════════════════════
-var startBerthGrp = new THREE.Group(); scene.add(startBerthGrp);
-// Main quay wall
-addBox(startBerthGrp, -400, 2, -21.5, 320, 6, 25, 0x888c8d);
-// Yellow edge stripe (inner face z=-9)
-addBox(startBerthGrp, -400, 5.05, -9.1, 320, 0.2, 1.5, 0xddaa00);
-// Fenders & bollards every 15m along inner face (z=-9)
-var sbXArr = [];
-for(var bfx=-545; bfx<=-255; bfx+=15) sbXArr.push(bfx);
-makePierRow(startBerthGrp, sbXArr, 2.5, -15, -9);
-
-// ══════════════════════════════════════════════════════════
-//  ★ 2. 좌현 목표 부두 (Port Target Pier)
-//    출항 후 500 m 전방 (x=-400+500=100 에서 시작)
-//    내측면 world-Z = -100  →  좌현측 구조물
-//    부두 본체: z=-100 ~ -130 (30m), x=100 ~ 400 (300m)
-// ══════════════════════════════════════════════════════════
-var portPierGrp = new THREE.Group(); scene.add(portPierGrp);
-addBox(portPierGrp, 250, 2, -115, 300, 6, 30, 0x8a9090);
-// Yellow inner edge stripe (z=-100 face)
-addBox(portPierGrp, 250, 5.05, -100.1, 300, 0.2, 1.5, 0xddaa00);
-// Fenders on inner face (z=-100)
-var ppXArr = [];
-for(var pfx=110; pfx<=390; pfx+=15) ppXArr.push(pfx);
-makePierRow(portPierGrp, ppXArr, 2.5, -108, -100);
-// Pier-head bollards at far end (x=400 side)
-addBox(portPierGrp, 397, 3.2, -115, 4, 0.5, 20, 0x707878); // pier head cap
-cyl2(portPierGrp, 0.7,0.7,2,8,0xddaa00, 395, 6.4, -108);
-cyl2(portPierGrp, 0.7,0.7,2,8,0xddaa00, 395, 6.4, -122);
-
-// ══════════════════════════════════════════════════════════
-//  ★ 3. 우현 목표 부두 (Stbd Target Pier)  ← 접안 대상
-//    내측면 world-Z = +100  →  우현측 구조물
-//    부두 본체: z=+100 ~ +130 (30m), x=100 ~ 400 (300m)
-//    선체 우현면 z = ship.y + 8 = 100  →  DOCK_Y = 92
-//    양측 간격: z=-100 ~ z=+100 = 200 m ✓
-// ══════════════════════════════════════════════════════════
-var stbdPierGrp = new THREE.Group(); scene.add(stbdPierGrp);
-addBox(stbdPierGrp, 250, 2, +115, 300, 6, 30, 0x8a9090);
-// Yellow inner edge stripe (z=+100 face)
-addBox(stbdPierGrp, 250, 5.05, +100.1, 300, 0.2, 1.5, 0xddaa00);
-// Fenders on inner face (z=+100)
-var spXArr = [];
-for(var sfx=110; sfx<=390; sfx+=15) spXArr.push(sfx);
-makePierRow(stbdPierGrp, spXArr, 2.5, +108, +100);
-addBox(stbdPierGrp, 397, 3.2, +115, 4, 0.5, 20, 0x707878);
-cyl2(stbdPierGrp, 0.7,0.7,2,8,0xddaa00, 395, 6.4, +108);
-cyl2(stbdPierGrp, 0.7,0.7,2,8,0xddaa00, 395, 6.4, +122);
-
-// Simple cylinder helper (for pier bollards)
-function cyl2(g,rt,rb,h,seg,col,x,y,z){
-  var m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),new THREE.MeshLambertMaterial({color:col}));
-  m.position.set(x,y,z); g.add(m); return m;
-}
-
-// ══════════════════════════════════════════════════════════
-//  ★ APPROACH GUIDE ELEMENTS
-// ══════════════════════════════════════════════════════════
-// 1. 항로 중심선 (channel CL at z=0, approach dash line)
-var clGeo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-600,1.5,0),new THREE.Vector3(100,1.5,0)]);
-var clLine=new THREE.Line(clGeo,new THREE.LineDashedMaterial({color:0xffdd00,dashSize:15,gapSize:8,transparent:true,opacity:0.4}));
-clLine.computeLineDistances(); scene.add(clLine);
-
-// 2. 접근 가이드선 (waypoint → berth, 사선)
-var gl2Pts=[new THREE.Vector3(-600,1.4,0),new THREE.Vector3(WP_X,1.4,WP_Y),new THREE.Vector3(DOCK_X,1.4,DOCK_Y)];
-var gl2Geo=new THREE.BufferGeometry().setFromPoints(gl2Pts);
-var guideLine=new THREE.Line(gl2Geo,new THREE.LineDashedMaterial({color:0x00aaff,dashSize:10,gapSize:5,transparent:true,opacity:0.45}));
-guideLine.computeLineDistances(); scene.add(guideLine);
-
-// 3. 항로 경계선 (pier inner faces z=±100)
-[[-100],[+100]].forEach(function(zArr){
-  var bPts=[new THREE.Vector3(100,1.2,zArr[0]),new THREE.Vector3(400,1.2,zArr[0])];
-  var bLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints(bPts),new THREE.LineBasicMaterial({color:0x226644,transparent:true,opacity:0.5}));
-  scene.add(bLine);
+})();
+// 부두 끝 구조물
+addBox(dockGroup,  30, 3.5, +22,  30, 7, 20, 0xaaa090);
+addBox(dockGroup, 510, 3.5, +22,  30, 7, 20, 0xaaa090);
+// 볼라드 (계선주)
+[-80,-40,0,40,80,120,160,200,240,280,320,360,400,440,480].forEach(function(bx){
+  addBox(dockGroup, 270+bx-200, 5.5, +14, 1.5, 4, 1.5, 0x444444);
 });
 
-// 4. 웨이포인트 마커
-var wpMesh=new THREE.Mesh(new THREE.SphereGeometry(4,12,12),new THREE.MeshBasicMaterial({color:0x00ffcc,wireframe:true,transparent:true,opacity:0.7}));
-wpMesh.position.set(WP_X,4,WP_Y); scene.add(wpMesh);
-
-// 5. 접안 목표 링 (stbd pier face z=+100, x=DOCK_X)
-var tgtRing=new THREE.Mesh(new THREE.TorusGeometry(6,0.6,8,32),new THREE.MeshBasicMaterial({color:0xff4400,transparent:true,opacity:0.9}));
-tgtRing.rotation.x=Math.PI/2;              // lie flat on water
-tgtRing.position.set(DOCK_X,2.5,DOCK_Y);   // ship center target
-scene.add(tgtRing);
-
-// 6. 동적 선박→목표 가이드선
-var s2dPts=[new THREE.Vector3(START_X,2,START_Y),new THREE.Vector3(DOCK_X,2,DOCK_Y)];
-var s2dGeo=new THREE.BufferGeometry().setFromPoints(s2dPts);
-var s2dLine=new THREE.Line(s2dGeo,new THREE.LineBasicMaterial({color:0x00aaff,transparent:true,opacity:0.5}));
-s2dLine.frustumCulled=false; scene.add(s2dLine);
-var s2dPos=s2dGeo.attributes.position;
-
-// ══════════════════════════════════════════════════════════
-//  ★★★ DETAILED ASD TUGBOAT 3D MODEL ★★★
-// ══════════════════════════════════════════════════════════
-var ownShipGrp=new THREE.Group(); scene.add(ownShipGrp);
+// ★ V600 상세 ASD 터그보트 3D 선체 모델
+var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
 
 (function buildTug(G){
   var mHull  = new THREE.MeshLambertMaterial({color:0x111111});
@@ -429,19 +468,19 @@ var ownShipGrp=new THREE.Group(); scene.add(ownShipGrp);
   redM.rotation.x=-Math.PI/2; redM.position.y=3.8; G.add(redM);
 
   // ── 4. RUBBER FENDERS ──
+  // ★ 본선 펜더 0.5m 돌출: 선체 외측(x=8.0)에서 R+r=0.5m → 외측 x=8.5
+  //   Torus: center x=±8.0, R=0.4, r=0.1 → outermost = 8.0+0.4+0.1 = 8.5 ✓
   var DY=5.05;
   [-13,-7,-1,5,11].forEach(function(fz){
-    tr(1.15,0.42,18,mBlack,-8.1,2.5,fz,Math.PI/2,undefined);
-    tr(1.15,0.42,18,mBlack, 8.1,2.5,fz,Math.PI/2,undefined);
+    tr(0.4,0.1,18,mBlack,-8.0,2.5,fz,Math.PI/2,undefined);
+    tr(0.4,0.1,18,mBlack, 8.0,2.5,fz,Math.PI/2,undefined);
   });
   [-2,0,2].forEach(function(bx2){tr(1.0,0.38,16,mBlack,bx2,2.5,-21.5,0,undefined);});
   tr(0.9,0.34,14,mBlack,-5,2.5,-19.5,Math.PI/3,undefined);
   tr(0.9,0.34,14,mBlack, 5,2.5,-19.5,Math.PI/3,undefined);
 
-  // ── 5. SUPERSTRUCTURE ──
-  // ── 5. SUPERSTRUCTURE (선실 및 브릿지 창문) *** 수정을 해야하는 부분 ***──
+ // ── 5. SUPERSTRUCTURE (선실 및 브릿지 창문) *** 수정을 해야하는 부분 ***──
   // [조정 가능 수치] 상부 구조물의 폭, 높이, 위치 조절
- // [조정 가능 수치] 상부 구조물의 폭, 높이, 위치 조절
   // ── 5. SUPERSTRUCTURE ──
   var SZ=-4.0;
   // ★ 1층 선실: 폭을 12.0 -> 10.0 으로 줄입니다.
@@ -472,8 +511,6 @@ var ownShipGrp=new THREE.Group(); scene.add(ownShipGrp);
   cy(0.45,0.45,0.25,10,mGray,-6.6,DY+4.6,SZ-1.2,Math.PI/2);
   cy(0.45,0.45,0.25,10,mGray, 6.6,DY+4.6,SZ-1.2,Math.PI/2);
   sp(0.35,8,mWhtL,-6.6,DY+4.6,SZ-1.45); sp(0.35,8,mWhtL,6.6,DY+4.6,SZ-1.45);
-
-
   // ── 6. MAST ──
   var mBY=DY+2.6+2.4+1.0, mZ=SZ+0.2;
   cy(0.28,0.28,8.5,8,mWhite,0,mBY+4.25,mZ);
@@ -497,8 +534,8 @@ var ownShipGrp=new THREE.Group(); scene.add(ownShipGrp);
   cy(0.88,0.88,0.5,12,mOrange,-2.2,DY+4.0,SZ+2.0);
   cy(0.88,0.88,0.5,12,mOrange, 2.2,DY+4.0,SZ+2.0);
 
-  // ── 8. DECK EQUIPMENT ──
- bx(6.5,1.2,3.0,mDGray,0,DY+0.6,9.5);
+ // ── 8. DECK EQUIPMENT (갑판 장비)  *** 수정을 해야 하는 부분 *** ──
+  bx(6.5,1.2,3.0,mDGray,0,DY+0.6,9.5);
   var wDr=new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.9,5.5,14),mDGray);
   wDr.rotation.z=Math.PI/2; wDr.position.set(0,DY+1.5,9.5); G.add(wDr);
  // ★ [수정] 좌우 노란 점을 일직선으로 연결하는 토잉 레일 (쇠파이프 형태)
@@ -529,6 +566,7 @@ var ownShipGrp=new THREE.Group(); scene.add(ownShipGrp);
   });
 
 
+
   // ── 9. RAILINGS ──
   var railMat=mWhite;
   for(var rz=-14;rz<=13;rz+=3.5){
@@ -553,428 +591,208 @@ var ownShipGrp=new THREE.Group(); scene.add(ownShipGrp);
 
 })(ownShipGrp);
 
-// ── WAKE & TRAIL ──
-var WAKE_N=6000,wakeGeo=new THREE.BufferGeometry(),wakeP=new Float32Array(WAKE_N*3);
-wakeGeo.setAttribute('position',new THREE.BufferAttribute(wakeP,3));
-function getCircleTex(){var c=document.createElement('canvas');c.width=16;c.height=16;var ctx=c.getContext('2d');ctx.beginPath();ctx.arc(8,8,8,0,Math.PI*2);ctx.fillStyle='#ffffff';ctx.fill();return new THREE.CanvasTexture(c);}
-var wakeMesh=new THREE.Points(wakeGeo,new THREE.PointsMaterial({color:0xffffff,size:6,transparent:true,opacity:0.8,depthWrite:false,map:getCircleTex()}));
-wakeMesh.frustumCulled=false; scene.add(wakeMesh);
-var wakeActive=new Float32Array(WAKE_N),wakeVel=new Float32Array(WAKE_N*3),wakeIdx=0;
-function spawnWake(x,y,z,vx,vy,vz){var i=wakeIdx%WAKE_N;wakeP[i*3]=x+(Math.random()-0.5)*2;wakeP[i*3+1]=y;wakeP[i*3+2]=z+(Math.random()-0.5)*2;wakeVel[i*3]=vx+(Math.random()-0.5)*0.2;wakeVel[i*3+1]=vy;wakeVel[i*3+2]=vz+(Math.random()-0.5)*0.2;wakeActive[i]=1.0;wakeIdx++;wakeGeo.attributes.position.needsUpdate=true;}
-var TRAIL_MAX=3000,trailPts=new Float32Array(TRAIL_MAX*3),trailGeo=new THREE.BufferGeometry();
-trailGeo.setAttribute('position',new THREE.BufferAttribute(trailPts,3)); trailGeo.setDrawRange(0,0);
-var trailLine=new THREE.Line(trailGeo,new THREE.LineBasicMaterial({color:0x44ddff,transparent:true,opacity:0.85,depthTest:false}));
-trailLine.renderOrder=999; trailLine.frustumCulled=false; scene.add(trailLine);
-var trailCount=0,trailTimer=0;
-function addTrailPoint(){if(trailCount>=TRAIL_MAX)return;var i=trailCount*3;trailPts[i]=ship.x;trailPts[i+1]=2.0;trailPts[i+2]=ship.y;trailGeo.attributes.position.needsUpdate=true;trailCount++;trailGeo.setDrawRange(0,trailCount);}
+// ASD 포드 그룹 (호환성 유지)
+window.zDL=new THREE.Group(); window.zDL.position.set(-3.5, 0, 13); ownShipGrp.add(window.zDL);
+window.zDR=new THREE.Group(); window.zDR.position.set( 3.5, 0, 13); ownShipGrp.add(window.zDR);
+
+var WAKE_N = 6000;
+var wakeGeo = new THREE.BufferGeometry();
+var wakeP = new Float32Array(WAKE_N * 3);
+wakeGeo.setAttribute('position', new THREE.BufferAttribute(wakeP, 3));
+
+function getCircleTex(){
+  var c=document.createElement('canvas');c.width=16;c.height=16;var ctx=c.getContext('2d');
+  ctx.beginPath();ctx.arc(8,8,8,0,Math.PI*2);ctx.fillStyle='#ffffff';ctx.fill();return new THREE.CanvasTexture(c);
+}
+
+var wakeMat = new THREE.PointsMaterial({color: 0xffffff, size: 6, transparent: true, opacity: 0.8, depthWrite: false, map: getCircleTex()});
+var wakeMesh = new THREE.Points(wakeGeo, wakeMat);
+wakeMesh.frustumCulled = false; 
+scene.add(wakeMesh);
+
+var wakeActive = new Float32Array(WAKE_N), wakeVel = new Float32Array(WAKE_N * 3), wakeIdx = 0;
+
+function spawnWake(x,y,z,vx,vy,vz){
+  var i = wakeIdx % WAKE_N;
+  wakeP[i*3] = x + (Math.random()-0.5)*2; wakeP[i*3+1] = y; wakeP[i*3+2] = z + (Math.random()-0.5)*2;
+  wakeVel[i*3] = vx + (Math.random()-0.5)*0.2; wakeVel[i*3+1] = vy; wakeVel[i*3+2] = vz + (Math.random()-0.5)*0.2;
+  wakeActive[i] = 1.0; wakeIdx++; wakeGeo.attributes.position.needsUpdate=true;
+}
+
+var TRAIL_MAX=3000;
+var trailPts=new Float32Array(TRAIL_MAX*3);
+var trailGeo=new THREE.BufferGeometry();
+trailGeo.setAttribute('position',new THREE.BufferAttribute(trailPts,3));
+trailGeo.setDrawRange(0,0);
+var trailMat=new THREE.LineBasicMaterial({color:0x44ddff,transparent:true,opacity:0.85,depthTest:false});
+var trailLine=new THREE.Line(trailGeo,trailMat);
+trailLine.renderOrder=999; trailLine.frustumCulled = false; scene.add(trailLine);
+var trailCount=0, trailTimer=0;
+
+function addTrailPoint(){
+  if(trailCount>=TRAIL_MAX)return;
+  var i=trailCount*3;
+  trailPts[i]=ship.x; trailPts[i+1]=2.0; trailPts[i+2]=ship.y;
+  trailGeo.attributes.position.needsUpdate=true;
+  trailCount++; trailGeo.setDrawRange(0,trailCount);
+}
 function clearTrail(){trailCount=0;trailTimer=0;trailGeo.setDrawRange(0,0);}
 
-var isThirdPersonView=true;
-function toggleView(){isThirdPersonView=!isThirdPersonView;var btn=document.getElementById('viewBtn');if(isThirdPersonView){btn.innerHTML='👁️ Drone View';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}else{btn.innerHTML='👁️ Bridge View';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}}
+var isThirdPersonView = true;
+function toggleView() {
+  isThirdPersonView = !isThirdPersonView;
+  var btn = document.getElementById('viewBtn');
+  if(isThirdPersonView) {btn.innerHTML='👁️ Drone View';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}
+  else {btn.innerHTML='👁️ Bridge View';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
+}
 
-// ══════════════════════════════════════════════════════════
-//  PHYSICS ENGINE (800t) – unchanged
-// ══════════════════════════════════════════════════════════
+// ── ★ 물리 엔진 완벽 수정 (0도 추력, 횡방향 교정, 20% 변침저하, 15노트 최고속력 유지) ──
 var lt=0;
 function uP(){
-  var n=Date.now(); if(lt===0){lt=n;return;} var dt=Math.min((n-lt)/16.67,3); lt=n;
-
-  // ★ V318 비선형 출력곡선: Governor 제곱, CPP 1.5승
-  //    → 저출력 구간 섬세한 조작감, 고출력 구간 강력한 가속감
+  var n=Date.now();if(lt===0){lt=n;return;}var dt=Math.min((n-lt)/16.67,3);lt=n;
+  
   var pg=Math.pow(ship.pGov/10, 0.8), sg=Math.pow(ship.sGov/10, 0.8);
   var pF=Math.pow(Math.abs(ship.pCPP)/27, 0.6), sF=Math.pow(Math.abs(ship.sCPP)/27, 0.6);
-
-  var ptE=ship.pGov>0 ? pg*pF*(ship.pCPP>=0?1:-1) : 0;
-  var sbE=ship.sGov>0 ? sg*sF*(ship.sCPP>=0?1:-1) : 0;
-
+  
+  var ptE = ship.pGov > 0 ? pg * pF * (ship.pCPP >= 0 ? 1 : -1) : 0;
+  var sbE = ship.sGov > 0 ? sg * sF * (ship.sCPP >= 0 ? 1 : -1) : 0;
+  
   var ptR=getPortThrust(ship.pt,ship.st)*D, sbR=getStbdThrust(ship.sb,ship.st)*D;
-  var sfx=Math.sin(ptR)*ptE+Math.sin(sbR)*sbE;
-  var sfy=-Math.cos(ptR)*ptE-Math.cos(sbR)*sbE;
+  var sfx=Math.sin(ptR)*ptE+Math.sin(sbR)*sbE, sfy=-Math.cos(ptR)*ptE-Math.cos(sbR)*sbE;
+  
+  var isCrabPort = (ship.pt <= -25 && ship.pt >= -65 && ship.sb >= 25 && ship.sb <= 65) && Math.abs(ship.st) < 20;
+  var isCrabStbd = (ship.pt >= 25 && ship.pt <= 65 && ship.sb <= -25 && ship.sb >= -65) && Math.abs(ship.st) < 20;
+  var isComboPort = Math.abs(ship.pt) < 15 && Math.abs(ship.sb) < 15 && ship.st <= -25 && ship.st >= -55;
+  var isComboStbd = Math.abs(ship.pt) < 15 && Math.abs(ship.sb) < 15 && ship.st >= 25 && ship.st <= 55;
 
-  // ★ 크랩(Crab)/슬라이딩 동작 감지 (V318)
-  //   크랩: 좌현기 후방-우현기 전방(또는 반대) → 순수 횡이동
-  //   콤보: 레버 중립+조타각 → 측방 슬라이딩
-  var isCrabPort =(ship.pt<=-25&&ship.pt>=-65&&ship.sb>=25&&ship.sb<=65)&&Math.abs(ship.st)<20;
-  var isCrabStbd =(ship.pt>=25&&ship.pt<=65&&ship.sb<=-25&&ship.sb>=-65)&&Math.abs(ship.st)<20;
-  var isComboPort=Math.abs(ship.pt)<15&&Math.abs(ship.sb)<15&&ship.st<=-25&&ship.st>=-55;
-  var isComboStbd=Math.abs(ship.pt)<15&&Math.abs(ship.sb)<15&&ship.st>=25&&ship.st<=55;
-  var isSlidingPort=isCrabPort||isComboPort;
-  var isSlidingStbd=isCrabStbd||isComboStbd;
-  var isSliding=isSlidingPort||isSlidingStbd;
+  var isSlidingPort = isCrabPort || isComboPort;
+  var isSlidingStbd = isCrabStbd || isComboStbd;
+  var isSliding = isSlidingPort || isSlidingStbd;
 
-  if(isSliding){
-    // 슬라이딩 모드: 측력을 순수 횡이동으로 전환, 전방력·회두 감쇠
-    if(isSlidingPort) sfx=-(Math.abs(ptE)+Math.abs(sbE))*0.8;
-    else              sfx= (Math.abs(ptE)+Math.abs(sbE))*0.8;
-    sfy*=0.1;
-    ship.om*=0.5;
+  if(isSliding) {
+    if(isSlidingPort) sfx = -(Math.abs(ptE) + Math.abs(sbE)) * 0.8; 
+    else sfx = (Math.abs(ptE) + Math.abs(sbE)) * 0.8; 
+    sfy *= 0.1; 
+    ship.om *= 0.5; 
   }
 
   var cH=Math.cos(ship.hd), sH=Math.sin(ship.hd);
-
-  // ★ 속도 상수: V318 원본값 0.00836 (최대 15 kts 교정)
-  ship.vx+=(sfx*cH-sfy*sH)*0.00836*dt;
+  
+  // 최고 속력 RPM 750, CPP 26 기준 15.0 Knots 도달 (0.00836)
+  ship.vx+=(sfx*cH-sfy*sH)*0.00836*dt; 
   ship.vy+=(sfx*sH+sfy*cH)*0.00836*dt;
-
-  // ★ 토크: V318 원본 공식 완전 복원
-  //   실제 좌표계 (x=East, y=South=Three.js Z) 검증:
-  //   좌현기 위치 world(-15, -3.5), 전진력(ptE,0):
-  //     τ = r×F = (-15)·0 - (-3.5)·ptE = +3.5·ptE > 0 → om>0 → 선수 South = 우현 ✓
-  //   우현기 위치 world(-15, +3.5), 전진력(sbE,0):
-  //     τ = (-15)·0 - (+3.5)·sbE = -3.5·sbE < 0 → om<0 → 선수 North = 좌현 ✓
-  //   양기 동출력: +3.5·E - 3.5·E = 0 → 직진 ✓
-  //   우현조타(st=45°, ptR=sbR=315°): τ = +22.6·E > 0 → 우현 회두 ✓
-  if(!isSliding){
-    var torque=(3.5*Math.cos(ptR)*ptE - 8*Math.sin(ptR)*ptE
-              - 3.5*Math.cos(sbR)*sbE - 8*Math.sin(sbR)*sbE);
-    ship.om+=torque*0.000015*dt;
+  
+ if(!isSliding) {
+    // ★ 16을 8로 줄이고, 0.00015에 0을 하나 더 넣어서 0.000015로 고쳤습니다!
+    ship.om+=((-3.5)*(-Math.cos(ptR)*ptE)-8*(Math.sin(ptR)*ptE)+3.5*(-Math.cos(sbR)*sbE)-8*(Math.sin(sbR)*sbE))*0.000015*dt;
   }
+    var turnRate = Math.abs(ship.om);
+  // ★ 1.0을 0.2로 줄여서, 배가 팽이처럼 제자리에서 돌지 않고 앞으로 넓게 원을 그리게 합니다!
+  var fwdDrag = Math.max(0.85, 0.98 - turnRate * 0.2);
 
-  // ★ 선회율 비례 전방 항력 (V318): 선회 중 가속 억제
-  var turnRate=Math.abs(ship.om);
-  var fwdDrag=Math.max(0.80, 0.94-turnRate*0.2);
-  ship.vx*=Math.pow(fwdDrag,dt);
-  ship.vy*=Math.pow(fwdDrag,dt);
-  ship.om*=Math.pow(0.975,dt);
-ship.om = Math.max(-0.015, Math.min(0.015, ship.om));
+  
+  ship.vx*=Math.pow(fwdDrag,dt); ship.vy*=Math.pow(fwdDrag,dt); ship.om*=Math.pow(0.975,dt);
+  var fV=ship.vx*sH-ship.vy*cH, lV=ship.vx*cH+ship.vy*sH; 
+  ship.om = Math.max(-0.03, Math.min(0.03, ship.om));
 
-  // ★ 킬(Keel) 효과 (V318): 전후/횡 속도 성분 분리 드래그
-  //    선체는 전후로는 잘 미끄러지고, 횡으로는 강한 킬 저항
-  var fV= ship.vx*sH - ship.vy*cH;  // 전후 속도 성분
-  var lV= ship.vx*cH + ship.vy*sH;  // 횡 속도 성분
-  var latDrag = isSliding ? 0.98 : 0.93; // 슬라이딩 시 킬저항 감소
+  var latDrag = isSliding ? 0.98 : 0.93;
   lV*=Math.pow(latDrag,dt);
-  ship.vx= fV*sH + lV*cH;
-  ship.vy=-fV*cH + lV*sH;
+  
+  ship.vx=fV*sH+lV*cH; ship.vy=-fV*cH+lV*sH;
+  // ★ 속도계(knots)와 화면 이동 속도를 일치시키는 보정 계수
+  var SPEED_VISUAL_SCALE = 0.17;
+  ship.x+=ship.vx*dt*SPEED_VISUAL_SCALE; ship.y+=ship.vy*dt*SPEED_VISUAL_SCALE; ship.hd+=ship.om*dt;
 
-  ship.x+=ship.vx*dt; ship.y+=ship.vy*dt; ship.hd+=ship.om*dt;
+  trailTimer+=dt;
+  if(trailTimer>15){trailTimer=0;addTrailPoint();}
 
-  trailTimer+=dt; if(trailTimer>15){trailTimer=0;addTrailPoint();}
+  var fX=Math.sin(ship.hd), fZ=-Math.cos(ship.hd), rX=Math.cos(ship.hd), rZ=Math.sin(ship.hd);
+  var pTx = ship.x + rX*(-3.5) + fX*(-15);
+  var pTz = ship.y + rZ*(-3.5) + fZ*(-15);
+  var sTx = ship.x + rX*(3.5) + fX*(-15);
+  var sTz = ship.y + rZ*(3.5) + fZ*(-15);
 
-  // 물보라 생성
-  var fX=Math.sin(ship.hd),fZ=-Math.cos(ship.hd),rX=Math.cos(ship.hd),rZ=Math.sin(ship.hd);
-  if(Math.abs(ptE)>0.01&&Math.random()<0.9){
-    var pWF=-Math.cos(ptR)*ptE*12,pWR=-Math.sin(ptR)*ptE*12;
-    for(var i=0;i<4;i++) spawnWake(ship.x+rX*(-3.5)+fX*(-15),0.5,ship.y+rZ*(-3.5)+fZ*(-15),pWF*fX+pWR*rX,0,pWF*fZ+pWR*rZ);
+  if(Math.abs(ptE)>0.01 && Math.random()<0.9) {
+    var pWF = -Math.cos(ptR)*ptE*12, pWR = -Math.sin(ptR)*ptE*12;
+    for(var i=0; i<4; i++) spawnWake(pTx, 0.5, pTz, pWF*fX+pWR*rX, 0, pWF*fZ+pWR*rZ);
   }
-  if(Math.abs(sbE)>0.01&&Math.random()<0.9){
-    var sWF=-Math.cos(sbR)*sbE*12,sWR=-Math.sin(sbR)*sbE*12;
-    for(var i=0;i<4;i++) spawnWake(ship.x+rX*3.5+fX*(-15),0.5,ship.y+rZ*3.5+fZ*(-15),sWF*fX+sWR*rX,0,sWF*fZ+sWR*rZ);
+  if(Math.abs(sbE)>0.01 && Math.random()<0.9) {
+    var sWF = -Math.cos(sbR)*sbE*12, sWR = -Math.sin(sbR)*sbE*12;
+    for(var i=0; i<4; i++) spawnWake(sTx, 0.5, sTz, sWF*fX+sWR*rX, 0, sWF*fZ+sWR*rZ);
   }
 }
 
-// ══════════════════════════════════════════════════════════
-//  SCENE UPDATE & ADAPTIVE CAMERA
-// ══════════════════════════════════════════════════════════
+function drawWinFrame(W,H){var svg=document.getElementById('winFrame');svg.innerHTML='';var ns='http://www.w3.org/2000/svg';
+function el(tag,a){var e=document.createElementNS(ns,tag);for(var k in a)e.setAttribute(k,a[k]);return e;}
+svg.appendChild(el('rect',{x:0,y:0,width:W,height:14,fill:'#2a3428',opacity:0.9}));svg.appendChild(el('line',{x1:0,y1:14,x2:W,y2:14,stroke:'rgba(80,110,70,0.5)','stroke-width':1}));}
+
 function updateBridgeView(t){
-  var pos=oceanGeo.attributes.position;
-  for(var wi=0;wi<pos.count;wi++){var wx=pos.getX(wi),wz=pos.getZ(wi);pos.setY(wi,oceanOrigY[wi]+Math.sin(wx*0.04+t)*0.5+Math.sin(wz*0.03+t*0.8)*0.3);}
-  pos.needsUpdate=true;
-  ocean.position.x=ship.x; ocean.position.z=ship.y;
-
-  // Guide elements visibility
-  s2dPos.setXYZ(0,ship.x,2,ship.y); s2dPos.setXYZ(1,DOCK_X,2,DOCK_Y);
-  s2dGeo.attributes.position.needsUpdate=true;
-  s2dLine.material.opacity=(autoMode&&autoPhase>0&&autoPhase<5)?0.5:0;
-  wpMesh.material.opacity=(autoPhase===1)?0.8:0;
-  tgtRing.material.opacity=(autoPhase>0&&autoPhase<5)?0.9:0.35;
-  wpMesh.rotation.y=t*1.5; tgtRing.rotation.z=t*1.5;
-
-  // fX/fZ: Wake 생성 및 Bridge View 전용 (카메라 방위에는 사용 안 함)
-  var fX=Math.sin(ship.hd), fZ=-Math.cos(ship.hd);
-
-  // ══════════════════════════════════════════════════════════
-  //  ★ NORTH-UP 고정 방위 카메라
-  //    카메라는 선체 위치를 추종하되 방위각은 선수 방향과 무관
-  //    → 부두·해면 등 세계좌표 오브젝트는 화면에서 고정
-  //    → 선체 3D 모델(ownShipGrp)만 rotation.y 로 제자리 회전
-  // ══════════════════════════════════════════════════════════
-  if(isThirdPersonView){
-    if(autoMode&&autoPhase>=1&&autoPhase<=4){
-      var dX=DOCK_X-ship.x;
-      if(dX>200){
-        // 광각: 출발 부두 + 선체 + 목표 부두 전체 조감 (고정 방위)
-        var midX=(ship.x+DOCK_X)*0.5, midZ=(ship.y+DOCK_Y)*0.5;
-        var camH=Math.max(90,dX*0.50);
-        camera.position.set(midX, camH, midZ+dX*0.40);
-        camera.lookAt(midX, 0, midZ);
-      } else if(dX>50){
-        // 중거리: 선체+목표 부두 (서쪽 고정 앵글)
-        camera.position.set(ship.x-60, 60, ship.y+50);
-        camera.lookAt(ship.x+20, 0, ship.y);
-      } else {
-        // 접안 클로즈업 (서남 고정 앵글)
-        camera.position.set(ship.x-30, 22, ship.y+25);
-        camera.lookAt(ship.x+5, 2, ship.y);
-      }
-    } else {
-      // 기본 드론뷰: 선체 남서쪽 고정 방위 추종
-      camera.position.set(ship.x-60, 130, ship.y+40);
-      camera.lookAt(ship.x, 0, ship.y);
-    }
+  var pos=oceanGeo.attributes.position;for(var wi=0;wi<pos.count;wi++){var wx=pos.getX(wi),wz=pos.getZ(wi);pos.setY(wi,oceanOrigY[wi]+Math.sin(wx*0.04+t)*0.5+Math.sin(wz*0.03+t*0.8)*0.3);}pos.needsUpdate=true;
+  ocean.position.x=ship.x;ocean.position.z=ship.y;
+  var fX=Math.sin(ship.hd),fZ=-Math.cos(ship.hd);
+  
+  if(isThirdPersonView) {
+    // ★ NORTH-UP 고정 방위 드론뷰
+    //   카메라 방위는 고정 → 부두·해면 등 세계좌표 오브젝트 화면에서 고정
+    //   선체 모델(ownShipGrp)만 rotation.y 로 제자리 회전
+    camera.position.set(ship.x - 40, 150, ship.y - 40);
+    camera.lookAt(ship.x, 0, ship.y);
   } else {
-    // Bridge View만 선수 방향 사용 (1인칭 시점)
-   camera.position.set(ship.x - fX*40, 150, ship.y - fZ*40);
-    camera.lookAt(ship.x + fX*10, 0, ship.y + fZ*10);}
+    // 브릿지뷰: 선수 방향 1인칭 시점
+    var camH = 10.8, camFwd = 7.5;
+    camera.position.set(ship.x + fX * camFwd, camH, ship.y + fZ * camFwd);
+    camera.lookAt(ship.x + fX * 30, 5, ship.y + fZ * 30);
+  }
 
-  ownShipGrp.position.set(ship.x,0,ship.y); ownShipGrp.rotation.y=-ship.hd;
-
-  // Wake update
+  
+  ownShipGrp.position.set(ship.x, 0, ship.y);
+  ownShipGrp.rotation.y = -ship.hd;
+  
   for(var wi2=0;wi2<WAKE_N;wi2++){
     if(wakeActive[wi2]>0){
-      wakeActive[wi2]-=0.008;
+      wakeActive[wi2]-=0.008; 
       wakeP[wi2*3]+=wakeVel[wi2*3]; wakeP[wi2*3+1]+=wakeVel[wi2*3+1]; wakeP[wi2*3+2]+=wakeVel[wi2*3+2];
-      wakeVel[wi2*3]*=0.96; wakeVel[wi2*3+2]*=0.96;
-      if(wakeActive[wi2]<=0) wakeP[wi2*3]=99999;
+      wakeVel[wi2*3]*=0.96; wakeVel[wi2*3+2]*=0.96; 
+      if(wakeActive[wi2]<=0) wakeP[wi2*3]=99999; 
     }
   }
   wakeGeo.attributes.position.needsUpdate=true;
 }
 
-// ══════════════════════════════════════════════════════════
-//  HUD UPDATE  ── ★ 속도: *20 표시 (V318 방식, 양기 최대=15kts) ──
-// ══════════════════════════════════════════════════════════
-function updateHUD(){
-  var hud=document.getElementById('hud');
-  if(!autoMode||autoPhase===0){hud.style.display='none';return;}
-  hud.style.display='block';
-
-  var dX=DOCK_X-ship.x;                         // 접안까지 전방 거리 (m)
-  var dY=ship.y-DOCK_Y;                          // 횡방향 오프셋 (m, 양=우현 과다)
-  var hdgDeg=((ship.hd*R2D)%360+360)%360;
-  var hdgErr=90-hdgDeg;
-  if(hdgErr>180)hdgErr-=360; if(hdgErr<-180)hdgErr+=360;
-
-  var fX=Math.sin(ship.hd), fY=-Math.cos(ship.hd);
-  var rX=Math.cos(ship.hd), rY=Math.sin(ship.hd);
-  // ★ V318 방식: 전후/횡 속도 분리 후 *20 표시 (최대 15kts)
-  var spdFwdKts=(ship.vx*fX+ship.vy*fY)*20;
-
-  // Distance bar  (총 650 m 기준)
-  var distEl=document.getElementById('hudDist');
-  distEl.textContent=dX>0?dX.toFixed(1)+' m':'CONTACT';
-  var distPct=Math.max(0,Math.min(100,(1-(dX/650))*100));
-  var distBar=document.getElementById('distBar');
-  distBar.style.width=distPct+'%';
-  var dCol=dX<20?'#ff6644':(dX<80?'#ffaa00':'#4dd88a');
-  distBar.style.background=dCol; distEl.style.color=dX>0?dCol:'#ff4444';
-
-  // Speed bar & warning
-  var spdEl=document.getElementById('hudSpd');
-  spdEl.textContent=spdFwdKts.toFixed(2)+' kts';
-  // 거리별 최대 안전속도 (실제 kts)
-  var maxSafe=dX>200?8.0:(dX>80?3.0:(dX>30?1.2:(dX>10?0.4:0.15)));
-  var spdPct=Math.max(0,Math.min(100,(spdFwdKts/15.0)*100));
-  var spdBar=document.getElementById('spdBar');
-  spdBar.style.width=spdPct+'%';
-  if(spdFwdKts>maxSafe*1.2){spdBar.style.background='#ff4444';spdEl.style.color='#ff4444';}
-  else if(spdFwdKts>maxSafe){spdBar.style.background='#ffaa00';spdEl.style.color='#ffaa00';}
-  else{spdBar.style.background='#4dd88a';spdEl.style.color='#4dd88a';}
-  document.getElementById('spdWarning').style.display=(spdFwdKts>maxSafe*1.3&&dX<100)?'block':'none';
-
-  // Lateral & heading
-  var latEl=document.getElementById('hudLat');
-  latEl.textContent=(dY>=0?'+':'')+dY.toFixed(1)+' m';
-  latEl.style.color=Math.abs(dY)>15?'#ff6644':(Math.abs(dY)>5?'#ffaa00':'#88ddaa');
-  var hdgEl=document.getElementById('hudHdg');
-  hdgEl.textContent=(hdgErr>=0?'+':'')+hdgErr.toFixed(1)+'\u00B0';
-  hdgEl.style.color=Math.abs(hdgErr)>10?'#ff6644':(Math.abs(hdgErr)>3?'#ffaa00':'#88ddaa');
-
-  // Phase
-  var pLabel=document.getElementById('phaseLabel');
-  pLabel.textContent='● '+PHASE_LABELS[autoPhase]; pLabel.style.color=PHASE_COLORS[autoPhase];
-  for(var i=1;i<=5;i++){var dot=document.getElementById('pd'+i);dot.className='pdot'+(i===autoPhase?' active':(i<autoPhase?' done':''));}
-}
-
-// ══════════════════════════════════════════════════════════
-//  TOP-BAR HUD  ── ★ 속도 *20 (V318 방식) ──
-// ══════════════════════════════════════════════════════════
 function uH(){
-  // ★ 최대 15 kts 표시
-  var spd=Math.hypot(ship.vx,ship.vy)*SPDSCALE;
-  var hdgDeg=Math.round(((ship.hd*R2D)+360)%360);
-  document.getElementById('valHdg').textContent=('000'+hdgDeg).slice(-3)+'\u00B0';
-  document.getElementById('valSpd').textContent=spd.toFixed(1)+' kts';
-  var st=Math.round(ship.st),e0=document.getElementById('valStr');
-  if(st<0)e0.textContent='P'+Math.abs(st)+'\u00B0';else if(st>0)e0.textContent='S'+st+'\u00B0';else e0.textContent='0\u00B0';
+  var spd=Math.hypot(ship.vx,ship.vy)*20;var hdgDeg=Math.round(((ship.hd*R2D)+360)%360);
+  document.getElementById('valHdg').textContent=('000'+hdgDeg).slice(-3)+'\u00B0';document.getElementById('valSpd').textContent=spd.toFixed(1)+' kts';
+  var st=Math.round(ship.st),e0=document.getElementById('valStr');if(st<0)e0.textContent='P'+Math.abs(st)+'\u00B0';else if(st>0)e0.textContent='S'+st+'\u00B0';else e0.textContent='0\u00B0';
   document.getElementById('valPRpm').textContent=govOn(ship.pGov)?(govRpm(ship.pGov)+' RPM'):'OFF';
   document.getElementById('valSRpm').textContent=govOn(ship.sGov)?(govRpm(ship.sGov)+' RPM'):'OFF';
-  var ps=document.getElementById('playStatus');
-  if(playing){ps.innerHTML='▶ RUNNING';ps.style.color='#00ee88';}else{ps.innerHTML='■ STANDBY';ps.style.color='#556655';}
+  var ps=document.getElementById('playStatus');if(playing){ps.innerHTML='▶ RUNNING';ps.style.color='#00ee88';}else{ps.innerHTML='■ STANDBY';ps.style.color='#556655';}
 }
 
-// ══════════════════════════════════════════════════════════
-//  MULTI-PHASE AUTOPILOT
-//  PHASE1 TRANSIT : -400,0 → WP(70,46) 방위 추종
-//  PHASE2 ALIGN   : hd=90°, y→92 정렬
-//  PHASE3 APPROACH: 속도 상한 접근
-//  PHASE4 FINAL   : 극저속 최종 접안
-//  PHASE5 BERTHED : 완료
-// ══════════════════════════════════════════════════════════
-function runAutoPilot(){
-  if(autoPhase===0||autoPhase===5) return;
+function togglePlay(){playing=!playing;var b=document.getElementById('playBtn');if(playing){b.innerHTML='■ STOP';b.style.color='#ff5555';lt=0;}else{b.innerHTML='▶ PLAY';b.style.color='#00ee88';ship.vx=0;ship.vy=0;ship.om=0;}}
+function aS(){ship.pt=0;ship.sb=0;ship.st=0;ship.pGov=0;ship.sGov=0;ship.pCPP=0;ship.sCPP=0;ship.vx=0;ship.vy=0;ship.om=0;playing=false;document.getElementById('playBtn').innerHTML='▶ PLAY';}
+function doReset(){ship.x=270;ship.y=3.0;ship.hd=Math.PI/2;ship.vx=0;ship.vy=0;ship.om=0;clearTrail();aS();}
+function toggleHelp(){var o=document.getElementById('helpOverlay');o.style.display=o.style.display==='flex'?'none':'flex';}
 
-  var dX=DOCK_X-ship.x;
-  var hdgDeg=((ship.hd*R2D)%360+360)%360, hdgErr=90-hdgDeg;
-  if(hdgErr>180)hdgErr-=360; if(hdgErr<-180)hdgErr+=360;
-  var turnRate=ship.om*R2D;
-  var fX=Math.sin(ship.hd),fY=-Math.cos(ship.hd);
-  var rX=Math.cos(ship.hd),rY=Math.sin(ship.hd);
-  // ★ V318 방식 속도 분해 (*20)
-  var spdFwd=(ship.vx*fX+ship.vy*fY)*20;
-  var spdLat=(ship.vx*rX+ship.vy*rY)*20;
+function resizeBridge(){var w=bwEl.clientWidth,h=bwEl.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();drawWinFrame(w,h);}
 
-  // ── Phase transitions ──
-  if(autoPhase===1){
-    var wpDist=Math.hypot(WP_X-ship.x, WP_Y-ship.y);
-    if(wpDist<35 && Math.abs(hdgErr)<25) autoPhase=2;
-  } else if(autoPhase===2){
-    if(Math.abs(hdgErr)<2.5 && Math.abs(ship.y-DOCK_Y)<8 && Math.abs(spdLat)<0.5) autoPhase=3;
-  } else if(autoPhase===3){
-    if(dX<8) autoPhase=4;
-  } else if(autoPhase===4){
-    if(dX<=0.15){ autoPhase=5; aS(); showBerthed(); }
-  }
-
-  var tGov=0, tPt=90, tSb=90, tPCPP=0, tSCPP=0, tSt=0;
-
-  // ── PHASE 1: TRANSIT (방위각 추종) ──
-  // V318 비선형 출력: CPP를 더 크게 줘야 충분한 출력
-  if(autoPhase===1){
-    var wpDX=WP_X-ship.x, wpDY=WP_Y-ship.y;
-    var relAngle=Math.atan2(wpDX*rX+wpDY*rY, wpDX*fX+wpDY*fY)*R2D;
-    var yawCorr=relAngle*1.5-turnRate*5.5;
-    yawCorr=Math.max(-20,Math.min(20,yawCorr));
-    tGov=8; tPt=90; tSb=90;
-    // ★ 좌회두: 좌현CPP 증가 / 우회두: 우현CPP 증가
-    tPCPP=Math.max(0,Math.min(27,20-yawCorr));
-    tSCPP=Math.max(0,Math.min(27,20+yawCorr));
-    tSt=(ship.y-WP_Y)*0.5+spdLat*2.5;
-    tSt=Math.max(-25,Math.min(25,tSt));
-  }
-
-  // ── PHASE 2: ALIGN (방위 + 측방 y→DOCK_Y) ──
-  else if(autoPhase===2){
-    var yC2=hdgErr*0.9-turnRate*6.0;
-    yC2=Math.max(-16,Math.min(16,yC2));
-    // V318: 킬 효과로 횡속도 빠르게 감쇠 → 전진속도만 제어
-    var spdT=Math.min(1.0,Math.max(0,(dX-30)*0.03));
-    var spdC=(spdT-spdFwd)*5;
-    var baseCPP=Math.max(0,Math.min(18,10+spdC));
-    tGov=6; tPt=90; tSb=90;
-    tPCPP=Math.max(0,Math.min(24,baseCPP-yC2));
-    tSCPP=Math.max(0,Math.min(24,baseCPP+yC2));
-    tSt=(ship.y-DOCK_Y)*9+spdLat*22;
-    tSt=Math.max(-40,Math.min(40,tSt));
-  }
-
-  // ── PHASE 3: APPROACH (속도 비례 접근) ──
-  else if(autoPhase===3){
-    // V318 비선형: CPP를 좀 더 높게 설정해야 동일 출력
-    var tSpd=Math.min(1.5,dX*0.065);
-    var sE=(tSpd-spdFwd)*10;
-    var bCPP=Math.max(-10,Math.min(22,10+sE));
-    var yC3=hdgErr*0.6-turnRate*4.0;
-    yC3=Math.max(-8,Math.min(8,yC3));
-    tGov=5; tPt=90; tSb=90;
-    tPCPP=Math.max(-10,Math.min(22,bCPP-yC3));
-    tSCPP=Math.max(-10,Math.min(22,bCPP+yC3));
-    // V318 킬 효과: 횡 보정 작게 줘도 충분히 수렴
-    tSt=(ship.y-DOCK_Y)*10+spdLat*24;
-    tSt=Math.max(-30,Math.min(30,tSt));
-  }
-
-  // ── PHASE 4: FINAL (극저속 creep) ──
-  else if(autoPhase===4){
-    var tSpd4=Math.min(0.25,dX*0.03);
-    var sE4=(tSpd4-spdFwd)*16;
-    var bCPP4=Math.max(-12,Math.min(10,6+sE4));
-    var yC4=hdgErr*0.45-turnRate*3.0;
-    yC4=Math.max(-5,Math.min(5,yC4));
-    tGov=2; tPt=90; tSb=90;
-    tPCPP=Math.max(-12,Math.min(10,bCPP4-yC4));
-    tSCPP=Math.max(-12,Math.min(10,bCPP4+yC4));
-    tSt=(ship.y-DOCK_Y)*14+spdLat*34;
-    tSt=Math.max(-25,Math.min(25,tSt));
-  }
-
-  ship.st+=(tSt-ship.st)*0.18;
-  ship.pt+=(tPt-ship.pt)*0.09; ship.sb+=(tSb-ship.sb)*0.09;
-  ship.pGov+=(tGov-ship.pGov)*0.045; ship.sGov+=(tGov-ship.sGov)*0.045;
-  ship.pCPP+=(tPCPP-ship.pCPP)*0.055; ship.sCPP+=(tSCPP-ship.sCPP)*0.055;
-}
-
-// ══════════════════════════════════════════════════════════
-//  CONTROL FUNCTIONS
-// ══════════════════════════════════════════════════════════
-function showBerthed(){
-  var ov=document.getElementById('berthedOverlay'); ov.style.display='block';
-  var latErr=Math.abs(ship.y-DOCK_Y+8).toFixed(1); // stbd face offset
-  document.getElementById('berthedStats').textContent=
-    '우현 간격: '+latErr+' m  |  방위: '+Math.round(((ship.hd*R2D)%360+360)%360)+'°';
-  setTimeout(function(){ov.style.display='none';},9000);
-}
-function togglePlay(){
-  playing=!playing; var b=document.getElementById('playBtn');
-  if(playing){b.innerHTML='■ STOP';b.style.color='#ff5555';lt=0;}
-  else{b.innerHTML='▶ PLAY';b.style.color='#00ee88';ship.vx=0;ship.vy=0;ship.om=0;}
-}
-function aS(){
-  ship.pt=0;ship.sb=0;ship.st=0;ship.pGov=0;ship.sGov=0;
-  ship.pCPP=0;ship.sCPP=0;ship.vx=0;ship.vy=0;ship.om=0;
-  playing=false; document.getElementById('playBtn').innerHTML='▶ PLAY';
-}
-function doReset(){
-  // ★ 초기 위치: x=-400, y=0, 동향(π/2) – 좌현측이 출발 부두에 접안된 상태
-  ship.x=START_X; ship.y=START_Y; ship.hd=Math.PI/2;
-  ship.vx=0; ship.vy=0; ship.om=0;
-  clearTrail(); aS();
-  autoMode=0; autoPhase=0;
-  document.getElementById('berthedOverlay').style.display='none';
-  updateAutoBtns();
-}
-function updateAutoBtns(){
-  var btn=document.getElementById('autoBtn');
-  if(autoMode===1){
-    btn.innerHTML=' ';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';
-    document.getElementById('hud').style.display='block';
-  } else {
-    btn.innerHTML='  ';btn.style.color='#88ccff';btn.style.borderColor='rgba(100,200,255,0.5)';
-    document.getElementById('hud').style.display='none';
-  }
-}
-function toggleAuto(){
-  if(autoMode===1){autoMode=0;autoPhase=0;}
-  else{autoMode=1;autoPhase=1;if(!playing)togglePlay();}
-  updateAutoBtns();
-}
-function resizeBridge(){var w=bwEl.clientWidth,h=bwEl.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
 function autoScale(){
-  var cp=document.getElementById('controlPanel'),cw=document.getElementById('controlWrap');
-  if(!cp||!cw)return; cp.style.transform='none'; void cp.offsetWidth;
+  var cp=document.getElementById('controlPanel'),cw=document.getElementById('controlWrap');if(!cp||!cw)return;cp.style.transform='none';void cp.offsetWidth;
   cp.style.transform='scale('+Math.min(cw.clientWidth/(cp.scrollWidth+24),cw.clientHeight/(cp.scrollHeight+12),3)+')';
 }
 window.addEventListener('resize',function(){resizeBridge();autoScale();});
 window.addEventListener('orientationchange',function(){setTimeout(function(){resizeBridge();autoScale();},300);});
-resizeBridge(); autoScale(); doReset();
+resizeBridge();autoScale();
 
-// ══════════════════════════════════════════════════════════
-//  MAIN LOOP
-// ══════════════════════════════════════════════════════════
 var clock=new THREE.Clock();
 function mainLoop(){
-  requestAnimationFrame(mainLoop); var t=clock.getElapsedTime();
-  pI();
-  if(autoMode===1) runAutoPilot();
-  if(playing) uP();
-  updateBridgeView(t); renderer.render(scene,camera);
-  dCH(); drawGov(); drawCPP(); drawCompass();
-  drawGauge('portGauge','#c84040',getPortThrust(ship.pt,ship.st));
-  drawGauge('stbdGauge','#30a855',getStbdThrust(ship.sb,ship.st));
-  uH(); updateHUD();
+  requestAnimationFrame(mainLoop);var t=clock.getElapsedTime();
+  pI();if(playing)uP();updateBridgeView(t);renderer.render(scene,camera);
+  dCH();drawGov();drawCPP();drawCompass();
+  drawGauge('portGauge','#c84040',getPortThrust(ship.pt,ship.st));drawGauge('stbdGauge','#30a855',getStbdThrust(ship.sb,ship.st));
+  uH();
 }
 mainLoop();
 </script>
-<div style="position:fixed;bottom:2px;right:8px;font-size:9px;color:rgba(255,255,255,0.9);pointer-events:none;z-index:5;font-family:monospace">© 2026 G.Y. Lee. All rights reserved.</div>
+<div style="position:fixed;bottom:2px;right:8px;font-size:9px;color:rgba(255,255,255,0.85);pointer-events:none;z-index:5;font-family:monospace">© 2026  G.Y.Lee. All rights reserved </div>
 </body>
 </html>
