@@ -665,28 +665,37 @@ function uP(){
   var isComboPort = Math.abs(ship.pt) < 15 && Math.abs(ship.sb) < 15 && ship.st <= -25 && ship.st >= -55;
   var isComboStbd = Math.abs(ship.pt) < 15 && Math.abs(ship.sb) < 15 && ship.st >= 25 && ship.st <= 55;
 
-  var isSlidingPort = isCrabPort || isComboPort;
+var isSlidingPort = isCrabPort || isComboPort;
   var isSlidingStbd = isCrabStbd || isComboStbd;
   var isSliding = isSlidingPort || isSlidingStbd;
 
+  // [수정된 횡이동(슬라이딩) 물리 로직]
   if(isSliding) {
-    if(isSlidingPort) sfx = -(Math.abs(ptE) + Math.abs(sbE)) * 0.8; 
-    else sfx = (Math.abs(ptE) + Math.abs(sbE)) * 0.8; 
-    sfy *= 0.1; 
-    ship.om *= 0.5; 
+    // 1. 너무 빨랐던 슬라이딩 속도를 확 줄입니다. (기존 0.8 -> 0.35)
+    // 입맛에 맞춰 더 느리게 하려면 0.25, 조금 더 빠르게 하려면 0.45 로 조절하십시오.
+    var slideForce = (Math.abs(ptE) + Math.abs(sbE)) * 0.35;
+    
+    if(isSlidingPort) sfx = -slideForce; 
+    else sfx = slideForce; 
+    
+    // 2. 전/후진 강제 차단(sfy *= 0.1) 삭제! 
+    // 이제 타각이 완벽한 대칭이 아니면 자연스럽게 앞뒤로 밀리게 됩니다.
+    
+    // 3. 회전력 강제 정지(ship.om *= 0.5) 삭제!
+    // 이제 좌우 출력이 다르면(한쪽 엔진을 더 세게 밀면) 선미가 돌아갑니다.
   }
 
   var cH=Math.cos(ship.hd), sH=Math.sin(ship.hd);
   
-  // 최고 속력 RPM 750, CPP 26 기준 15.0 Knots 도달 (0.00836)
   ship.vx+=(sfx*cH-sfy*sH)*0.00836*dt; 
   ship.vy+=(sfx*sH+sfy*cH)*0.00836*dt;
   
- if(!isSliding) {
-    // ★ 16을 8로 줄이고, 0.00015에 0을 하나 더 넣어서 0.000015로 고쳤습니다!
-    ship.om+=((-3.5)*(-Math.cos(ptR)*ptE)-8*(Math.sin(ptR)*ptE)+3.5*(-Math.cos(sbR)*sbE)-8*(Math.sin(sbR)*sbE))*0.000015*dt;
-  }
-    var turnRate = Math.abs(ship.om);
+  // 4. [가장 중요한 수정] 회전력(타효) 계산 조건 해제!
+  // 원래는 if(!isSliding) 안에 갇혀있어서 슬라이딩 중에는 타효가 발생하지 않았습니다.
+  // 이제 무조건 물리 엔진이 회전력을 계산하도록 바깥으로 빼냈습니다.
+  ship.om+=((-3.5)*(-Math.cos(ptR)*ptE)-8*(Math.sin(ptR)*ptE)+3.5*(-Math.cos(sbR)*sbE)-8*(Math.sin(sbR)*sbE))*0.000015*dt;
+  
+  var turnRate = Math.abs(ship.om);
   // ★ 1.0을 0.2로 줄여서, 배가 팽이처럼 제자리에서 돌지 않고 앞으로 넓게 원을 그리게 합니다!
   var fwdDrag = Math.max(0.85, 0.98 - turnRate * 0.2);
 
